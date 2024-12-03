@@ -12,7 +12,7 @@
 #'
 #' @return A list containing:
 #'   - \code{phasing_dict}: The phasing dictionary data frame
-#'   - \code{doco_counts}: The DoCo-level count data frame
+#'   - \code{doco_count}: The DoCo-level count data frame
 #'
 #'
 #' @export
@@ -37,11 +37,11 @@ blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count) {
   phasing_dict <- blessy.createPhasingDictionary(phased_df, tx_df)
   
   # Step 8: Create DoCo-level counts
-  doco_counts <- blessy.createDoCoCount(phasing_dict, tx_count)
+  doco_count <- blessy.createDoCoCount(phasing_dict, tx_count)
   
   # Return the phasing dictionary and DoCo counts as a list
   return(list(
     phasing_dict = phasing_dict,
-    doco_counts = doco_counts
+    doco_count = doco_count
   ))
 }
