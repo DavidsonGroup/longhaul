@@ -141,6 +141,7 @@ To run *blessy* using annotations not from UCSC, users must ensure that these an
 ```R
 blessy_outs_custom <- blessy.usingCustomAnnotation(customTranscriptAnnotation, customDomainAnnotation, transcriptCount)
 ```
+
 **customTranscriptAnnotation** - A BED-like data frame representing transcript annotation of the required format. 
 
 **customDomainAnnotation** - A BED-like data frame representing domain annotation of the required format. 
@@ -152,7 +153,7 @@ blessy_outs_custom <- blessy.usingCustomAnnotation(customTranscriptAnnotation, c
 
 *blessy* returns a list containing two data frames: 
   - **phasing_dict** - A dictionary showing the hierarchical relationship of gene, DoCo and transcript from the annotations of choice
-  - **doco_counts** - A count table at DoCo level
+  - **doco_count** - A count table at DoCo level
 
 #### Functions and Arguments:
 Below we outline the component functions of blessy along with use-cases for each, to assist users in customizing the module to fit their specific needs.
