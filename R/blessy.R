@@ -15,7 +15,7 @@
 #'
 #' @return A list containing:
 #'   - \code{phasing_dict}: The phasing dictionary data frame containing information of Gene, DoCo and Transcript.
-#'   - \code{doco_counts}: The DoCo-level count data frame created by aggregating transcripts of the same DoCo.
+#'   - \code{doco_count}: The DoCo-level count data frame created by aggregating transcripts of the same DoCo.
 #'
 #' @examples
 #' # Example data for blessy
@@ -37,7 +37,7 @@
 #'
 #' # Access the results
 #' phasing_dict <- results$phasing_dict
-#' doco_counts <- results$doco_counts
+#' doco_count <- results$doco_count
 #'
 #' @export
 blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount) {
@@ -65,12 +65,12 @@ blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, trans
   phasing_dict <- blessy.createPhasingDictionary(phased_df, tx_df)
   
   # Step 8: Create DoCo-level counts
-  doco_counts <- blessy.createDoCoCount(phasing_dict, transcriptCount)
+  doco_count <- blessy.createDoCoCount(phasing_dict, transcriptCount)
   
   # Return the phasing dictionary and DoCo counts as a list
   return(list(
     phasing_dict = phasing_dict,
-    doco_counts = doco_counts
+    doco_count = doco_count
   ))
 }
 
