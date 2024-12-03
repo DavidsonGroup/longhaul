@@ -13,7 +13,7 @@
         - [Using pre-defined UCSC annotation tracks](#using-pre-defined-ucsc-annotation-tracks)
         - [Using custom annotation tracks](#using-custom-annotation-tracks)
         - [Output](#output)
-    - [Functions and Arguments](#functions-and-arguments)
+    - [Functions and Use Cases](#functions-and-use-cases)
 - [License](#license)
 - [Contact](#contact)
 
@@ -96,7 +96,7 @@ blessy_outs <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, tr
 **transcriptCount** - An R data frame containing RNA-Seq transcript count. The first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
 
 ##### Using custom annotation tracks
-Here *blessy* allows users to provide their own annotation tracks of choice, leaving room for annotation customization. For example, users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Arguments](#functions-and-arguments)), and integrate these domain tracks into one comprehensive domain annotation using simple R commands:
+Here *blessy* allows users to provide their own annotation tracks of choice, leaving room for annotation customization. For example, users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Use Cases](#functions-and-use-cases)), and integrate these domain tracks into one comprehensive domain annotation using simple R commands:
 
 ```R
 # Fetch domain tracks on the UCSC Genome Browser
@@ -115,7 +115,7 @@ domain_df <- filtered_df %>%
   arrange(chrom, chromStart) 
 ```
 
-To run *blessy* using annotations not from UCSC, users must ensure that these annotations are first read into BED-like R data frames. These data frames must include the following columns:
+To run *blessy* using annotations **NOT** from UCSC, users must ensure that these annotations are first read into BED-like R data frames. These data frames must include the following columns:
 
 **chrom**- Chromosome or scaffold name of the feature.
 
@@ -154,17 +154,50 @@ blessy_outs_custom <- blessy.usingCustomAnnotation(customTranscriptAnnotation, c
 *blessy* returns a list containing two data frames: 
   - **phasing_dict** - A dictionary showing the hierarchical relationship of gene, DoCo and transcript from the annotations of choice
   - **doco_count** - A count table at DoCo level
+These data frame can simply be accessed with:
 
-#### Functions and Arguments:
-Below we outline the component functions of blessy along with use-cases for each, to assist users in customizing the module to fit their specific needs.
+```R
+blessy_outs <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
+dictionary <- blessy_outs$phasing_dict
+count <- blessy_outs$doco_count
+view(dictionary)
+view(count)
+```
 
-- **Fetch Annotation Tracks**: Retrieve transcript and domain annotation tracks from the UCSC Genome Browser.
-- **Custom Annotations**: Use custom BED-like data frames for transcript and domain annotations.
-- **Domain Mapping**: Map domains to transcripts based on genomic overlaps.
-- **Deduplication**: Remove non-exact domain mappings to ensure accuracy.
-- **Phasing**: Phase domains along transcripts to create Domain Combination (DoCo) strings.
-- **Aggregation**: Generate DoCo-level counts from transcript-level RNA-seq counts.
-- **Phasing Dictionary**: Create a comprehensive dictionary summarizing gene, DoCo, and transcript relationships.
+#### Functions and Use Cases:
+Here, we outline the component functions of blessy along with use-cases for each, to assist users in customizing the module to fit their specific needs. The functions are listed based on their order in the blessy pipeline
+
+##### Fetch Annotation Tracks: blessy.getTranscriptTrack() and blessy.getDomainTrack()
+The purpose of these two functions is to retrieve UCSC annotations and convert them into BED-like R data frames. As transcript and domain tracks often have different syntax on the UCSC Database, each function is tailored to a different track type. Both functions require two arguments: an assembly identifier and an annotation identifier, which correspond to the 'Assembly' and 'Table' options in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables) respectively. Again, we highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation, as *blessy* is tailored around these annotations.
+
+```R
+transcript_annotation <- blessy.getTranscriptTrack("hg38", "wgEncodeGencodeBasicV44")
+domain_annotation <- blessy.getDomainTrack("hg38", "unipDomain")
+```
 
 
+##### Convert BED-like R Data Frame to GRangesList: blessy.dfToGRangesList()
+
+Once BED-like annotation data frames are available, each annotation will be converted into a CompressedGRangesList object via blessy.dfToGRangesList(). 
+
+```R
+transcript_GRL <- blessy.dfToGRanges(transcript_annotation)
+domain_GRL <- blessy.dfToGRanges(domain_annotation)
+```
+
+##### Map Domain to Transcript: blessy.mapDomainToTranscript()
+
+
+
+##### Add Block Coordinates to Mapping Data Frame: blessy.addStartsEnds()
+
+
+
+##### Domain Mapping Deduplication: blessy.domainDeduplication()
+
+##### Domain Phasing: blessy.domainPhasing()
+
+##### Create Phasing Dictionary: blessy.createPhasingDictionary()
+
+##### Create DoCo Count from Transcript Count: blessy.createDoCoCount()
 
