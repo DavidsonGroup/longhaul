@@ -96,7 +96,7 @@ blessy_outs <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, tr
 **transcriptCount** - An R data frame containing RNA-Seq transcript count. The first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
 
 ##### Using custom annotation tracks
-Here *blessy* allows users to provide their own annotation tracks of choice, leaving room for annotation customization. For example, users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Arguments](#functions-and-arguments), and integrate these domain tracks into one comprehensive domain annotation using simple R commands:
+Here *blessy* allows users to provide their own annotation tracks of choice, leaving room for annotation customization. For example, users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Arguments](#functions-and-arguments)), and integrate these domain tracks into one comprehensive domain annotation using simple R commands:
 
 ```R
 # Fetch domain tracks on the UCSC Genome Browser
