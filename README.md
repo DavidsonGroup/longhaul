@@ -190,6 +190,16 @@ The purpose of these two functions is for retrieving UCSC annotations. As transc
 ```R
 transcript_annotation <- blessy.getTranscriptTrack("hg38", "wgEncodeGencodeBasicV44")
 domain_annotation <- blessy.getDomainTrack("hg38", "unipDomain")
+
+> head(transcript_annotation)
+  chrom chromStart  chromEnd              name score strand thickStart  thickEnd itemRgb blockCount
+1  chr1   67092164  67134970 ENST00000684719.1     0      -   67093004  67127240   0,0,0          8
+2  chr1   67092164  67231852 ENST00000371007.6     0      -   67093004  67127240   0,0,0          8
+3  chr1   67092175  67127261 ENST00000371006.5     0      -   67093004  67127240   0,0,0          6
+4  chr1   67092175  67127261 ENST00000475209.6     0      -   67093579  67127240   0,0,0          7
+5  chr1   67092396  67127261 ENST00000621590.4     0      -   67096311  67127240   0,0,0          3
+6  chr1  201283451 201332993 ENST00000263946.7     0      +  201283702 201328836   0,0,0         15
+
 ```
 
 
@@ -208,7 +218,27 @@ transcript_annotation <- data.frame(
   )
 
 # Convert the data frame to a GRangesList
-transcript_GRL <- blessy.dfToGRanges(transcript_annotation)
+transcript_GRL <- blessy.dfToGRangesList(transcript_annotation)
+
+# Output visualization
+> head(transcript_GRL)
+GRangesList object of length 3:
+$`1`
+GRanges object with 1 range and 1 metadata column:
+      seqnames    ranges strand |        name
+         <Rle> <IRanges>  <Rle> | <character>
+  [1]     chr1 1000-1500      + |         Tx1
+  -------
+  seqinfo: 2 sequences from an unspecified genome; no seqlengths
+
+$`2`
+GRanges object with 1 range and 1 metadata column:
+      seqnames    ranges strand |        name
+         <Rle> <IRanges>  <Rle> | <character>
+  [1]     chr1 2000-2500      - |         Tx2
+  -------
+  seqinfo: 2 sequences from an unspecified genome; no seqlengths
+
 ```
 
 ##### Map Domain to Transcript: blessy.mapDomainToTranscript(transcript_GRL, domain_GRL, transcript_annotation, domain_annotation)
@@ -247,6 +277,23 @@ domain_grangesList <- blessy.dfToGRangesList(domain_df)
 
 # Create domain mapping 
 mapping_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, transcript_annotation, domain_annotation)
+
+# Output visualization
+> head(mapping_df)
+    chrom txStart txEnd Transcript strand cdsStart cdsEnd exonCount exonSizes exonRelativeStarts  Gene
+1    chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.1  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.2  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.3  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.4  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.5  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+    chromStart chromEnd  Domain chromStarts
+1         1200     1300 domainA           0
+1.1       2100     2200 domainB           0
+1.2       3100     3200 domainC           0
+1.3         NA       NA    <NA>        <NA>
+1.4         NA       NA    <NA>        <NA>
+1.5         NA       NA    <NA>        <NA>
 ```
 
 ##### Add Block Coordinates to Mapping Data Frame: blessy.addStartsEnds(mapping_df)
@@ -265,6 +312,24 @@ mapping_df <- data.frame(
 
 # Add block coordinates
 mapping_df <- blessy.addStartsEnds(mapping_df)
+
+# Output visualization
+> head(mapping_df)
+    chrom txStart txEnd Transcript strand cdsStart cdsEnd exonCount exonSizes exonRelativeStarts  Gene
+1    chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.1  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.2  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.3  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.4  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+1.5  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
+    chromStart chromEnd  Domain chromStarts
+1         1200     1300 domainA           0
+1.1       2100     2200 domainB           0
+1.2       3100     3200 domainC           0
+1.3         NA       NA    <NA>        <NA>
+1.4         NA       NA    <NA>        <NA>
+1.5         NA       NA    <NA>        <NA>
+
 ```
 
 ##### Domain Mapping Deduplication: blessy.domainDeduplication()
@@ -297,6 +362,9 @@ starts_ends_df <- blessy.addStartsEnds(mapped_df)
   
 # Deduplicate domain mappings
 deduplicated_df <- blessy.domainDeduplication(starts_ends_df)
+
+> nrow(deduplicated_df)
+[1] 4
 ```
 The resulting deduplicated_df should contain 4 rows including the mapping of D1 to D4.
 
@@ -308,17 +376,24 @@ The blessy.domainPhasing() generates the DoCo string of transcripts with matched
 mapping_df <- data.frame(
   Transcript = c("tx1", "tx1", "tx2"),
   Domain = c("domainA", "domainB", NA),
-  chrom2 = c("chr1", "chr1", "chr2"),
+  chrom = c("chr1", "chr1", "chr2"),
   chromStart = c(1000, 2000, 3000),
   chromEnd = c(1100, 2100, 3100),
-  strand2 = c("+", "-", "+"),
-  strand = c("+", "+", "-"),
+  strand = c("+", "-", "+"),
   Gene = c("geneA", "geneA", "geneB")
 )
 
 # Apply domain phasing and create a new 'DoCo' column
 mapping_df <- blessy.domainPhasing(mapping_df)
 
+# Output visualization
+> head(mapping_df)
+# A tibble: 3 × 8
+  Transcript Domain  chrom chromStart chromEnd strand Gene  DoCo                                                
+  <chr>      <chr>   <chr>      <dbl>    <dbl> <chr>  <chr> <chr>                                               
+1 tx1        domainA chr1        1000     1100 +      geneA domainA::chr1:1000-1100(+),domainB::chr1:2000-2100(…
+2 tx1        domainB chr1        2000     2100 -      geneA domainA::chr1:1000-1100(+),domainB::chr1:2000-2100(…
+3 tx2        NA      chr2        3000     3100 +      geneB ;;; geneB                                           
 ```
 
 ##### Create Phasing Dictionary: blessy.createPhasingDictionary(mapping_df, transcript_annotation)
@@ -337,9 +412,16 @@ transcript_annotation <- data.frame(
   name = c("tx1", "tx2", "tx3"),
   geneName = c("geneA", "geneB", "geneC")
 )
-#'
+
 # Create the phasing dictionary
 phasing_dict <- blessy.createPhasingDictionary(mapping_df, transcript_annotation)
+
+# Output visualization
+> head(phasing_dict)
+  Transcript                                DoCo              Gene
+1        tx1             domainA::chr1:1000-1100(+);;; geneA geneA
+2        tx2                           ;;; geneB             geneB
+3        tx3                           ;;; geneC             geneC
 ```
 
 ##### Create DoCo Count from Transcript Count: blessy.createDoCoCount(phasing_dict, transcriptCount)
@@ -352,7 +434,7 @@ dict <- data.frame(
   DoCo = c("D1,D2;;; GeneA", "D3;;; GeneB", ";;; GeneC"),
   stringsAsFactors = FALSE
 )
-#'
+
 # Example count data frame
 count_df <- data.frame(
   TranscriptID = c("Tx1", "Tx2", "Tx4", "Tx5"),
@@ -360,7 +442,19 @@ count_df <- data.frame(
   Sample2 = c(15, 25, 8, 10),
   stringsAsFactors = FALSE
 )
-#'
+
 # Create DoCo-level counts
 doco_count <- blessy.createDoCoCount(dict, count_df)
+Warning messages:
+1: In blessy.createDoCoCount(dict, count_df) :
+  Uncommon transcripts found, grouping them into the empty ';;;' DoCo group.
+2: In blessy.createDoCoCount(dict, count_df) :
+  Number of uncommon transcripts grouped: 2
+
+# Output visualization
+> head(doco_count)
+            DoCo       Sample1     Sample2
+1           ;;;            12          18
+2     D1,D2;;; GeneA       10          15
+3      D3;;; GeneB         20          25
 ```
