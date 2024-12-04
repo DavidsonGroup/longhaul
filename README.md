@@ -190,9 +190,11 @@ Here, we outline the component functions of blessy along with use-cases and argu
 The purpose of these two functions is for retrieving UCSC annotations. As transcript and domain tracks often have different syntax on the UCSC Database, each function is designed to a different track type. Both functions require two arguments: an assembly identifier and an annotation identifier, which correspond to the 'Assembly' and 'Table' options in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables) respectively. Again, we highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation. The output of blessy.getTranscriptTrack() and blessy.getDomainTrack() are annotations stored in BED-like R data frames.
 
 ```R
+# Fetch annotation tracks
 transcript_annotation <- blessy.getTranscriptTrack("hg38", "wgEncodeGencodeBasicV44")
 domain_annotation <- blessy.getDomainTrack("hg38", "unipDomain")
 
+# Output visualization
 > head(transcript_annotation)
   chrom chromStart  chromEnd              name score strand thickStart  thickEnd itemRgb blockCount
 1  chr1   67092164  67134970 ENST00000684719.1     0      -   67093004  67127240   0,0,0          8
