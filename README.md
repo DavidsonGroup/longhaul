@@ -325,7 +325,7 @@ mapping_df <- blessy.addStartsEnds(mapping_df)
 ```
 
 ##### Domain Mapping Deduplication: blessy.domainDeduplication()
-While the previous function allows for finding coordinate overlaps between domains and transcripts, non-exact matches that incorrectly assigns a domain to a transcript can happen. In the figure below, given a hypothetical transcript A, only domain 1 to domain 4 (D1-D4) should be considered correct matches for transcript A. For D5, we observe a non-consecutive exon match. The first D6 block does not align to an exon and while both blocks aligns with consecutive exons, the second block of D7 exhibited a gap to the left-hand side. Similarly, first block alignment of D8 showed overflown. We thus aim to remove D5 to D8 from this hypothetical domain-transcript mapping.
+While the previous function allows for finding coordinate overlaps between domains and transcripts, non-exact matches that incorrectly assigns a domain to a transcript can happen. In the figure below, given a hypothetical transcript A, only domain 1 to domain 4 (D1-D4) should be considered correct matches for transcript A. For D5, we observe a non-consecutive exon match. The first D6 block does not align to an exon and while both blocks aligns with consecutive exons, the second block of D7 exhibited a gap to the left-hand side. Similarly, first block alignment of D8 showed overflown. The blessy.domainDeduplication function thus aim to remove D5 to D8 from this hypothetical domain-transcript mapping, using the 'exonStarts', 'exonEnds', 'blockStarts', 'blockEnds' columns. 
 
 ![The Concept of Domain Deduplication](figures/domainDedup_concept.png)
 
@@ -358,7 +358,6 @@ deduplicated_df <- blessy.domainDeduplication(starts_ends_df)
 > nrow(deduplicated_df)
 [1] 4
 ```
-The resulting deduplicated_df should contain 4 rows including the mapping of D1 to D4.
 
 ##### Domain Phasing: blessy.domainPhasing(mapping_df)
 The blessy.domainPhasing() generates the DoCo string of transcripts with matched domains and includes them to the mapping data frame. The function iterates through the domains in each transcript based on their coordinates and strand direction, and output the DoCo string in a new 'DoCo' column. [FUTURE WORK]: The function offers the option to either include genomic coordinates of each domain in the DoCo string or not, affecting the number of DoCo class for transcript aggregation. 
