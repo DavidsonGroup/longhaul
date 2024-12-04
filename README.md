@@ -301,7 +301,7 @@ mapping_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, t
 ```
 
 ##### Add Block Coordinates to Mapping Data Frame: blessy.addStartsEnds(mapping_df)
-This function adds several columns needed for the domain deduplication to the mapping data frame, based on existing columns. More specifically, this functions creates exonStarts and exonEnds columns corresponding to the start and end genomic coordinates of exons within a transcript, and likewise for its domains with blockStarts and blockEnds. 
+This function adds several columns needed for the domain deduplication process to the input mapping data frame, based on existing columns. More specifically, this functions creates exonStarts and exonEnds columns corresponding to the start and end genomic coordinates of exons within a transcript, and likewise for its domains with blockStarts and blockEnds. 
 
 ```R
 # Example mapping data frame
@@ -364,7 +364,7 @@ deduplicated_df <- blessy.domainDeduplication(starts_ends_df)
 ```
 
 ##### Domain Phasing: blessy.domainPhasing(mapping_df)
-The blessy.domainPhasing() generates the DoCo string of transcripts with matched domains and includes them to the mapping data frame. The function iterates through the domains in each transcript based on their coordinates and strand direction, and output the DoCo string in a new 'DoCo' column. [FUTURE WORK]: The function offers the option to either include genomic coordinates of each domain in the DoCo string or not, affecting the number of DoCo class for transcript aggregation. 
+The blessy.domainPhasing() generates the DoCo string of transcripts with matched domains and includes them to the input mapping data frame. The function iterates through the domains in each transcript based on their coordinates and strand direction, and output the DoCo string in a new 'DoCo' column. [FUTURE WORK]: The function offers the option to either include genomic coordinates of each domain in the DoCo string or not, affecting the number of DoCo class for transcript aggregation. 
 
 ```R
 # Example domain mapping data frame
@@ -392,7 +392,7 @@ mapping_df <- blessy.domainPhasing(mapping_df)
 ```
 
 ##### Create Phasing Dictionary: blessy.createPhasingDictionary(mapping_df, transcript_annotation)
-This function summarizes the hierarchical relationship between Gene, DoCo and transcript for transcripts with and without matched domains, using given annotations. The output of the function is a data frame with 'Gene', 'DoCo' and 'Transcript' columns, which will be used to aggregate transcripts belonging to the same DoCo in a given RNA-Seq transcript count.
+This function summarizes the hierarchical relationship between Gene, DoCo and transcript for transcripts with and without matched domains, in the chosen annotation. The function requires the data frame consisting mapped transcripts, and the initial transcript annotation for handling unmapped transcripts. The output of the function is a data frame with 'Gene', 'DoCo' and 'Transcript' columns, which will be used to aggregate transcripts belonging to the same DoCo in a given RNA-Seq transcript count.
 
 ```R
 # Example domain mapping data frame containing a 'DoCo' column
@@ -420,7 +420,7 @@ phasing_dict <- blessy.createPhasingDictionary(mapping_df, transcript_annotation
 ```
 
 ##### Create DoCo Count from Transcript Count: blessy.createDoCoCount(phasing_dict, transcriptCount)
-This function aggregates an input transcript count to acquire DoCo-level count. Transcripts are grouped based on their DoCo assignment from a dictionary data frame, and counts are summed across biological samples. Transcripts not found in the dictionary are grouped into the DoCo class ";;;". For the transcript count input, the first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
+This function aggregates an input transcript count to acquire DoCo-level count. Transcripts are grouped based on their DoCo assignment from an input dictionary data frame, and counts are summed across biological samples. Transcripts not found in the dictionary are grouped into the DoCo class ";;;". For the transcript count input, the first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
 
 ```R
 # Example dictionary data frame
