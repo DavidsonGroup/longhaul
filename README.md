@@ -355,8 +355,8 @@ starts_ends_df <- blessy.addStartsEnds(mapped_df)
 # Deduplicate domain mappings
 deduplicated_df <- blessy.domainDeduplication(starts_ends_df)
 
-> nrow(deduplicated_df)
-[1] 4
+> unique(deduplicated_df$Domain)
+[1] "D1" "D2" "D3" "D4"
 ```
 
 ##### Domain Phasing: blessy.domainPhasing(mapping_df)
