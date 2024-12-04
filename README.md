@@ -154,6 +154,7 @@ blessy_outs_custom <- blessy.usingCustomAnnotation(customTranscriptAnnotation, c
 *blessy* returns a list containing two data frames: 
   - **phasing_dict** - A dictionary showing the hierarchical relationship of gene, DoCo and transcript from the annotations of choice
   - **doco_count** - A count table at DoCo level
+
 These data frame can simply be accessed with:
 
 ```R
@@ -167,8 +168,8 @@ view(count)
 #### Functions and Use Cases:
 Here, we outline the component functions of blessy along with use-cases for each, to assist users in customizing the module to fit their specific needs. The functions are listed based on their order in the blessy pipeline
 
-##### Fetch Annotation Tracks: blessy.getTranscriptTrack() and blessy.getDomainTrack()
-The purpose of these two functions is to retrieve UCSC annotations and convert them into BED-like R data frames. As transcript and domain tracks often have different syntax on the UCSC Database, each function is tailored to a different track type. Both functions require two arguments: an assembly identifier and an annotation identifier, which correspond to the 'Assembly' and 'Table' options in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables) respectively. Again, we highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation, as *blessy* is tailored around these annotations.
+##### Fetch Annotation Tracks: blessy.getTranscriptTrack(genomeAssembly, transcriptAnnotation) and blessy.getDomainTrack(genomeAssembly, domainAnnotation)
+The purpose of these two functions is for retrieving UCSC annotations. As transcript and domain tracks often have different syntax on the UCSC Database, each function is designed to a different track type. Both functions require two arguments: an assembly identifier and an annotation identifier, which correspond to the 'Assembly' and 'Table' options in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables) respectively. Again, we highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation, as *blessy* is tailored around these annotations. The output of blessy.getTranscriptTrack() and blessy.getDomainTrack() are annotations stored in BED-like R data frames.
 
 ```R
 transcript_annotation <- blessy.getTranscriptTrack("hg38", "wgEncodeGencodeBasicV44")
@@ -176,28 +177,48 @@ domain_annotation <- blessy.getDomainTrack("hg38", "unipDomain")
 ```
 
 
-##### Convert BED-like R Data Frame to GRangesList: blessy.dfToGRangesList()
+##### Convert BED-like R Data Frame to GRangesList: blessy.dfToGRangesList(annotation_df)
 
-Once BED-like annotation data frames are available, each annotation will be converted into a CompressedGRangesList object via blessy.dfToGRangesList(). 
+Once BED-like annotation data frames are available, each data frame will be converted into a single GRanges object, based on the columns 'chrom', 'chromStart', 'chromEnd', and 'strand'. Next, the single GRanges objects created from transcript and domain data frames will be splitted into a GRangesList where each row correspond to a transcript or a domain in the initial annotation using this function.
 
 ```R
 transcript_GRL <- blessy.dfToGRanges(transcript_annotation)
 domain_GRL <- blessy.dfToGRanges(domain_annotation)
 ```
 
-##### Map Domain to Transcript: blessy.mapDomainToTranscript()
+##### Map Domain to Transcript: blessy.mapDomainToTranscript(transcript_GRL, domain_GRL, transcript_annotation, domain_annotation)
+This function serves to map the domains that intersect each transcript based on genomic coordinates. The function takes in the two GRangesLists of domain and transcript, and find their coordinate overlaps using the findOverlaps() function of GenomicRanges. findOverlaps() returns index pairs of matching domains and transcripts, which is used to join columns of the initial transcript and domain annotations based on matching features. The return object of this function is a mapping data frame with information on transcript and its matched domains.
 
+```R
+mapping_df <- blessy.mapDomainToTranscript(transcript_GRL, domain_GRL, transcript_annotation, domain_annotation)
+```
 
+##### Add Block Coordinates to Mapping Data Frame: blessy.addStartsEnds(mapping_df)
+This function adds several columns needed for domain mapping deduplication (see below), based on existing columns. More specifically, this functions creates exonStarts and exonEnds column corresponding to the start and end genomic coordinates of exons within a transcript, and likewise for its domains with blockStarts and blockEnds. 
 
-##### Add Block Coordinates to Mapping Data Frame: blessy.addStartsEnds()
-
-
+```R
+mapping_df <- blessy.addStartsEnds(mapping_df)
+```
 
 ##### Domain Mapping Deduplication: blessy.domainDeduplication()
 
-##### Domain Phasing: blessy.domainPhasing()
+##### Domain Phasing: blessy.domainPhasing(mapping_df)
+The blessy.domainPhasing() generates the DoCo string of transcripts with matched domains. The function iterates through the domains in each transcript based on their coordinates and strand direction, and output the DoCo string in a new 'DoCo' column. [FUTURE WORK]: The function offers the option to either include genomic coordinates of each domain in the DoCo string or not, affecting the number of DoCo class for transcript aggregation. 
 
-##### Create Phasing Dictionary: blessy.createPhasingDictionary()
+```R
+mapping_df <- blessy.domainPhasing(mapping_df)
+```
 
-##### Create DoCo Count from Transcript Count: blessy.createDoCoCount()
+##### Create Phasing Dictionary: blessy.createPhasingDictionary(mapping_df, transcript_annotation)
+This function summarizes the hierarchical relationship between Gene, DoCo and transcript for both transcripts with and without matched domains. The output of the function is a data frame with 'Gene', 'DoCo' and 'Transcript' columns, which will be used to aggregate transcripts belonging to the same DoCo in a given RNA-Seq transcript count.
 
+```R
+phasing_dict <- blessy.createPhasingDictionary(mapping_df, transcript_annotation)
+```
+
+##### Create DoCo Count from Transcript Count: blessy.createDoCoCount(phasing_dict, transcriptCount)
+This function aggregates RNA-seq counts from a count data frame at the DoCo level. Transcripts are grouped based on their DoCo assignment from a dictionary data frame, and counts are summed across biological samples. Unmatched transcripts are grouped into the DoCo class ";;;". For the transcript count input, the first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
+
+```R
+doco_count <- blessy.createDoCoCount(phasing_dict, transcriptCount)
+```
