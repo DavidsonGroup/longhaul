@@ -268,6 +268,37 @@ mapping_df <- blessy.addStartsEnds(mapping_df)
 ```
 
 ##### Domain Mapping Deduplication: blessy.domainDeduplication()
+While the previous function allows for finding coordinate overlaps between domains and transcripts, non-exact matches that incorrectly assigns a domain to a transcript can happen. In the figure below, given a hypothetical transcript A, only domain 1 to domain 4 (D1-D4) should be considered correct matches for transcript A. For D5, we observe a non-consecutive exon match. The first D6 block does not align to an exon and while both blocks aligns with consecutive exons, the second block of D7 exhibited a gap to the left-hand side. Similarly, first block alignment of D8 showed overflown. We thus aim to remove D5 to D8 from this hypothetical domain-transcript mapping.
+
+![The Concept of Domain Deduplication](figures/domainDedup_concept.png)
+
+These hypothetical transcripts and domains have been converted to BED files, which can be found as data/example_domains.bed or data/example_transcript.bed. By default, we expect D1, D2, D3 and D4 to remain after deduplication. The use case for this process is as follows:
+
+```R
+# Read and rename hypothetical transcript A BED into an R BED-like data frame
+tx_df <- read.table("transcripts_blocks_new.bed")
+colnames(tx_df) <- c("chrom", "chromStart", "chromEnd", "name", "score", "strand",
+                        "thickStart", "thickEnd", "itemRgb", "blockCount", "blockSizes", "blockStarts", "geneName")
+
+# Read and rename hypothetical domains BED into an R BED-like data frame
+domain_df <- read.table("domains_blocks_new.bed")
+colnames(domain_df) <- c("chrom", "chromStart", "chromEnd", "name", "score", "strand",
+                     "thickStart", "thickEnd", "itemRgb", "blockCount", "blockSizes", "blockStarts")
+
+# Convert dataframes to GRanges object
+tx_grangesList <- blessy.dfToGRangesList(tx_df)
+domain_grangesList <- blessy.dfToGRangesList(domain_df)
+  
+# Map domains to transcripts
+mapped_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, tx_df, domain_df)
+  
+# Add exon and block starts/ends
+starts_ends_df <- blessy.addStartsEnds(mapped_df)
+  
+# Deduplicate domain mappings
+deduplicated_df <- blessy.domainDeduplication(starts_ends_df)
+```
+The resulting deduplicated_df should contain 4 rows including the mapping of D1 to D4.
 
 ##### Domain Phasing: blessy.domainPhasing(mapping_df)
 The blessy.domainPhasing() generates the DoCo string of transcripts with matched domains and includes them to the mapping data frame. The function iterates through the domains in each transcript based on their coordinates and strand direction, and output the DoCo string in a new 'DoCo' column. [FUTURE WORK]: The function offers the option to either include genomic coordinates of each domain in the DoCo string or not, affecting the number of DoCo class for transcript aggregation. 
