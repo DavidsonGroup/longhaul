@@ -315,20 +315,12 @@ mapping_df <- blessy.addStartsEnds(mapping_df)
 
 # Output visualization
 > head(mapping_df)
-    chrom txStart txEnd Transcript strand cdsStart cdsEnd exonCount exonSizes exonRelativeStarts  Gene
-1    chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.1  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.2  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.3  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.4  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.5  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-    chromStart chromEnd  Domain chromStarts
-1         1200     1300 domainA           0
-1.1       2100     2200 domainB           0
-1.2       3100     3200 domainC           0
-1.3         NA       NA    <NA>        <NA>
-1.4         NA       NA    <NA>        <NA>
-1.5         NA       NA    <NA>        <NA>
+  txStart exonRelativeStarts exonSizes chromStart chromStarts blockSizes     exonStarts       exonEnds
+1    1000          0,100,200 100,50,25       1000   0,150,300  100,50,25 1000,1100,1200 1100,1150,1225
+2    2000           0,50,100  80,40,30       2000   0,100,200   80,40,30 2000,2050,2100 2080,2090,2130
+     blockStarts      blockEnds
+1 1000,1150,1300 1100,1200,1325
+2 2000,2100,2200 2080,2140,2230
 
 ```
 
