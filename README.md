@@ -165,6 +165,8 @@ view(dictionary)
 view(count)
 ```
 
+For visualization of the dictionary and the DoCo count, please refer to the blessy.createPhasingDictionary and blessy.createDoCoCount functions (see [Functions and Use Cases](#functions-and-use-cases)).
+
 #### Functions and Use Cases:
 Here, we outline the component functions of blessy along with use-cases and arguments for each, to assist users in customizing the module to fit their specific needs. The functions are listed based on their order in the blessy pipeline:
 
