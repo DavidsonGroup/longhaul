@@ -217,29 +217,32 @@ transcript_annotation <- data.frame(
   chrom = c("chr1", "chr1", "chr2"),
   chromStart = c(1000, 2000, 3000),
   chromEnd = c(1500, 2500, 3500),
+  name = c("tx1", "tx2", "tx3"),
   strand = c("+", "-", "+"),
-  name = c("Tx1", "Tx2", "Tx3")
-  )
+  thickStart = c(1000, 2000, 3000),
+  thickEnd = c(1500, 2500, 3500),
+  blockCount = c(2, 2, 2),
+  blockSizes = c("100,200", "150,250", "200,300"),
+  blockStarts = c("0,400", "0,500", "0,600"),
+  geneName = c("geneA", "geneB", "geneC"),
+  stringsAsFactors = FALSE
+)
 
 # Convert the data frame to a GRangesList
 transcript_GRL <- blessy.dfToGRangesList(transcript_annotation)
 
 # Output visualization
 > head(transcript_GRL)
+
 GRangesList object of length 3:
 $`1`
-GRanges object with 1 range and 1 metadata column:
-      seqnames    ranges strand |        name
-         <Rle> <IRanges>  <Rle> | <character>
-  [1]     chr1 1000-1500      + |         Tx1
-  -------
-  seqinfo: 2 sequences from an unspecified genome; no seqlengths
-
-$`2`
-GRanges object with 1 range and 1 metadata column:
-      seqnames    ranges strand |        name
-         <Rle> <IRanges>  <Rle> | <character>
-  [1]     chr1 2000-2500      - |         Tx2
+GRanges object with 1 range and 7 metadata columns:
+      seqnames    ranges strand |        name thickStart  thickEnd blockCount  blockSizes blockStarts
+         <Rle> <IRanges>  <Rle> | <character>  <numeric> <numeric>  <numeric> <character> <character>
+  [1]     chr1 1000-1500      + |         tx1       1000      1500          2     100,200       0,400
+         geneName
+      <character>
+  [1]       geneA
   -------
   seqinfo: 2 sequences from an unspecified genome; no seqlengths
 
