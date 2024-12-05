@@ -267,7 +267,8 @@ transcript_annotation <- data.frame(
   geneName = c("geneA", "geneB", "geneC"),
   stringsAsFactors = FALSE
 )
-#'
+
+
 domain_annotation <- data.frame(
   chrom = c("chr1", "chr1", "chr2"),
   chromStart = c(1200, 2100, 3100),
@@ -275,32 +276,27 @@ domain_annotation <- data.frame(
   name = c("domainA", "domainB", "domainC"),
   strand = c("+", "-", "+"),
   blockStarts = c("0", "0", "0"),
+  blockSizes = c("100", "100", "100"),  # Assuming block size is 100 for each domain
   stringsAsFactors = FALSE
 )
 
 # Convert to GRangesList
-tx_grangesList <- blessy.dfToGRangesList(tx_df)
-domain_grangesList <- blessy.dfToGRangesList(domain_df)
+tx_grangesList <- blessy.dfToGRangesList(transcript_annotation)
+domain_grangesList <- blessy.dfToGRangesList(domain_annotation)
 
 # Create domain mapping 
 mapping_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, transcript_annotation, domain_annotation)
 
 # Output visualization
 > head(mapping_df)
-    chrom txStart txEnd Transcript strand cdsStart cdsEnd exonCount exonSizes exonRelativeStarts  Gene
-1    chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.1  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.2  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.3  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.4  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-1.5  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA
-    chromStart chromEnd  Domain chromStarts
-1         1200     1300 domainA           0
-1.1       2100     2200 domainB           0
-1.2       3100     3200 domainC           0
-1.3         NA       NA    <NA>        <NA>
-1.4         NA       NA    <NA>        <NA>
-1.5         NA       NA    <NA>        <NA>
+  chrom txStart txEnd Transcript strand cdsStart cdsEnd exonCount exonSizes exonRelativeStarts  Gene chromStart chromEnd  Domain
+1  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA       1200     1300 domainA
+2  chr1    2000  2500        tx2      -     2000   2500         2   150,250              0,500 geneB       2100     2200 domainB
+3  chr2    3000  3500        tx3      +     3000   3500         2   200,300              0,600 geneC       3100     3200 domainC
+  chromStarts blockSizes
+1           0        100
+2           0        100
+3           0        100
 ```
 
 ##### Add Block Coordinates to Mapping Data Frame: blessy.addStartsEnds(mapping_df)
