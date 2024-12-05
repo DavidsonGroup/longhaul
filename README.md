@@ -237,12 +237,25 @@ transcript_GRL <- blessy.dfToGRangesList(transcript_annotation)
 GRangesList object of length 3:
 $`1`
 GRanges object with 1 range and 7 metadata columns:
-      seqnames    ranges strand |        name thickStart  thickEnd blockCount  blockSizes blockStarts
-         <Rle> <IRanges>  <Rle> | <character>  <numeric> <numeric>  <numeric> <character> <character>
-  [1]     chr1 1000-1500      + |         tx1       1000      1500          2     100,200       0,400
-         geneName
-      <character>
-  [1]       geneA
+      seqnames    ranges strand |        name thickStart  thickEnd blockCount  blockSizes blockStarts    geneName
+         <Rle> <IRanges>  <Rle> | <character>  <numeric> <numeric>  <numeric> <character> <character> <character>
+  [1]     chr1 1000-1500      + |         tx1       1000      1500          2     100,200       0,400       geneA
+  -------
+  seqinfo: 2 sequences from an unspecified genome; no seqlengths
+
+$`2`
+GRanges object with 1 range and 7 metadata columns:
+      seqnames    ranges strand |        name thickStart  thickEnd blockCount  blockSizes blockStarts    geneName
+         <Rle> <IRanges>  <Rle> | <character>  <numeric> <numeric>  <numeric> <character> <character> <character>
+  [1]     chr1 2000-2500      - |         tx2       2000      2500          2     150,250       0,500       geneB
+  -------
+  seqinfo: 2 sequences from an unspecified genome; no seqlengths
+
+$`3`
+GRanges object with 1 range and 7 metadata columns:
+      seqnames    ranges strand |        name thickStart  thickEnd blockCount  blockSizes blockStarts    geneName
+         <Rle> <IRanges>  <Rle> | <character>  <numeric> <numeric>  <numeric> <character> <character> <character>
+  [1]     chr2 3000-3500      + |         tx3       3000      3500          2     200,300       0,600       geneC
   -------
   seqinfo: 2 sequences from an unspecified genome; no seqlengths
 
