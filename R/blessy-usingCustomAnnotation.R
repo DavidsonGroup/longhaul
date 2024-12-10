@@ -13,14 +13,8 @@
 #'   in the \code{DoCo} string during the phasing step. Defaults to \code{TRUE}.
 #'
 #' @return A list containing:
-<<<<<<< HEAD
 #'   - \code{phasing_dict}: The phasing dictionary data frame.
 #'   - \code{doco_count}: The DoCo-level count data frame.
-=======
-#'   - \code{phasing_dict}: The phasing dictionary data frame
-#'   - \code{doco_count}: The DoCo-level count data frame
-#'
->>>>>>> 5c7ad0b0d10a01d3e504074a09e5913d8c3e66f9
 #'
 #' @export
 blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, coordinates = TRUE) {
@@ -56,12 +50,8 @@ blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, coordinates
   cat("Step 7/9: Creating the phasing dictionary...\n")
   phasing_dict <- blessy.createPhasingDictionary(phased_df, tx_df)
   
-<<<<<<< HEAD
   # Step 8: Create DoCo-level count
   cat("Step 8/9: Creating DoCo-level count...\n")
-=======
-  # Step 8: Create DoCo-level counts
->>>>>>> 5c7ad0b0d10a01d3e504074a09e5913d8c3e66f9
   doco_count <- blessy.createDoCoCount(phasing_dict, tx_count)
   
   # Return the results
