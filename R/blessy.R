@@ -16,7 +16,11 @@
 #'   in the \code{DoCo} string during the phasing step. Defaults to \code{TRUE}.
 #'
 #' @return A list containing:
+<<<<<<< HEAD
 #'   - \code{phasing_dict}: The phasing dictionary data frame containing information of Gene, DoCo, and Transcript.
+=======
+#'   - \code{phasing_dict}: The phasing dictionary data frame containing information of Gene, DoCo and Transcript.
+>>>>>>> 5c7ad0b0d10a01d3e504074a09e5913d8c3e66f9
 #'   - \code{doco_count}: The DoCo-level count data frame created by aggregating transcripts of the same DoCo.
 #'
 #' @examples
@@ -52,8 +56,13 @@
 #' )
 #'
 #' # Access the results
+<<<<<<< HEAD
 #' phasing_dict <- results_with_coords$phasing_dict
 #' doco_count <- results_with_coords$doco_count
+=======
+#' phasing_dict <- results$phasing_dict
+#' doco_count <- results$doco_count
+>>>>>>> 5c7ad0b0d10a01d3e504074a09e5913d8c3e66f9
 #'
 #' @export
 blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount, coordinates = TRUE) {
@@ -88,8 +97,12 @@ blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, trans
   cat("Step 7/9: Creating the phasing dictionary...\n")
   phasing_dict <- blessy.createPhasingDictionary(phased_df, tx_df)
   
+<<<<<<< HEAD
   # Step 8: Create DoCo-level count
   cat("Step 8/9: Creating DoCo-level count...\n")
+=======
+  # Step 8: Create DoCo-level counts
+>>>>>>> 5c7ad0b0d10a01d3e504074a09e5913d8c3e66f9
   doco_count <- blessy.createDoCoCount(phasing_dict, transcriptCount)
   
   # Step 9: Return the results
