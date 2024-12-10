@@ -19,8 +19,6 @@
 #'   - \code{blockStarts}: Computed block start positions (comma-separated).
 #'   - \code{blockEnds}: Computed block end positions (comma-separated).
 #'
-#' @importFrom dplyr select mutate group_by summarise left_join %>%
-#' @importFrom tidyr unnest_longer
 #'
 #' @examples
 #' # Example data frame
@@ -39,58 +37,59 @@
 #' @export
 blessy.addStartsEnds <- function(df) {
   # Ensure required columns
-  required_columns <- c("txStart", "exonRelativeStarts", "exonSizes", "chromStart", "chromStarts", "blockSizes")
+  required_columns <- c("txStart", "exonRelativeStarts", "exonSizes", 
+                        "chromStart", "chromStarts", "blockSizes")
   missing_columns <- setdiff(required_columns, colnames(df))
   if (length(missing_columns) > 0) {
     stop(paste("The following required columns are missing:", paste(missing_columns, collapse = ", ")))
   }
   
-  # Add a unique identifier for each row
-  df$row_id <- seq_len(nrow(df))
+  # Split all exon and block data up front
+  exon_rel_starts_list <- strsplit(as.character(df$exonRelativeStarts), ",")
+  exon_sizes_list <- strsplit(as.character(df$exonSizes), ",")
   
-  # Process exonStarts and exonEnds
-  exon_df <- df %>%
-    select(row_id, txStart, exonRelativeStarts, exonSizes) %>%
-    mutate(
-      exonRelativeStarts = strsplit(as.character(exonRelativeStarts), ","),
-      exonSizes = strsplit(as.character(exonSizes), ",")
-    ) %>%
-    unnest_longer(c(exonRelativeStarts, exonSizes)) %>%
-    mutate(
-      exonStarts = as.numeric(exonRelativeStarts) + txStart,
-      exonEnds = exonStarts + as.numeric(exonSizes)
-    ) %>%
-    group_by(row_id) %>%
-    summarise(
-      exonStarts = paste(exonStarts, collapse = ","),
-      exonEnds = paste(exonEnds, collapse = ","),
-      .groups = "drop"
+  block_starts_list <- strsplit(as.character(df$chromStarts), ",")
+  block_sizes_list <- strsplit(as.character(df$blockSizes), ",")
+  
+  # Compute exon starts/ends
+  # mapply will iterate over each row, allowing vectorized arithmetic inside the function:
+  exon_results <- mapply(function(tx_start, rel_starts, sizes) {
+    rel_starts_num <- as.numeric(rel_starts)
+    sizes_num <- as.numeric(sizes)
+    exon_starts <- rel_starts_num + tx_start
+    exon_ends <- exon_starts + sizes_num
+    list(
+      exonStarts = paste(exon_starts, collapse = ","),
+      exonEnds = paste(exon_ends, collapse = ",")
     )
+  }, 
+  tx_start = df$txStart, 
+  rel_starts = exon_rel_starts_list, 
+  sizes = exon_sizes_list, 
+  SIMPLIFY = FALSE)
   
-  # Process blockStarts and blockEnds
-  block_df <- df %>%
-    select(row_id, chromStart, chromStarts, blockSizes) %>%
-    mutate(
-      chromStarts = strsplit(as.character(chromStarts), ","),
-      blockSizes = strsplit(as.character(blockSizes), ",")
-    ) %>%
-    unnest_longer(c(chromStarts, blockSizes)) %>%
-    mutate(
-      blockStarts = as.numeric(chromStarts) + chromStart,
-      blockEnds = blockStarts + as.numeric(blockSizes)
-    ) %>%
-    group_by(row_id) %>%
-    summarise(
-      blockStarts = paste(blockStarts, collapse = ","),
-      blockEnds = paste(blockEnds, collapse = ","),
-      .groups = "drop"
+  # Compute block starts/ends
+  block_results <- mapply(function(chrom_start, rel_starts, sizes) {
+    rel_starts_num <- as.numeric(rel_starts)
+    sizes_num <- as.numeric(sizes)
+    block_starts <- rel_starts_num + chrom_start
+    block_ends <- block_starts + sizes_num
+    list(
+      blockStarts = paste(block_starts, collapse = ","),
+      blockEnds = paste(block_ends, collapse = ",")
     )
+  },
+  chrom_start = df$chromStart,
+  rel_starts = block_starts_list,
+  sizes = block_sizes_list,
+  SIMPLIFY = FALSE)
   
-  # Merge the computed columns back into the original data frame
-  df <- df %>%
-    left_join(exon_df, by = "row_id") %>%
-    left_join(block_df, by = "row_id") %>%
-    select(-row_id)  # Remove the temporary row identifier
+  # Extract computed values into new columns
+  df$exonStarts <- sapply(exon_results, `[[`, "exonStarts")
+  df$exonEnds <- sapply(exon_results, `[[`, "exonEnds")
+  
+  df$blockStarts <- sapply(block_results, `[[`, "blockStarts")
+  df$blockEnds <- sapply(block_results, `[[`, "blockEnds")
   
   return(df)
 }

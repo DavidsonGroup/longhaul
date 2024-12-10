@@ -2,27 +2,36 @@
 % Please edit documentation in R/blessy.R
 \name{blessy}
 \alias{blessy}
-\title{blessy: A Wrapper Function to Run All Steps in the blessy's pipeline}
+\title{blessy: A Wrapper Function to Run All Steps in the blessy's Pipeline}
 \usage{
-blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
+blessy(
+  genomeAssembly,
+  transcriptAnnotation,
+  domainAnnotation,
+  transcriptCount,
+  coordinates = TRUE
+)
 }
 \arguments{
 \item{genomeAssembly}{A string specifying the genome/assembly UCSC identifier (e.g., "hg38").}
 
 \item{transcriptAnnotation}{A string or data frame specifying the transcript annotation track UCSC identifier (e.g., "wgEncodeGencodeBasicV44").
-If a data frame is provided, refer to blessy.usingCustomAnnotation.}
+If a data frame is provided, refer to `blessy.usingCustomAnnotation`.}
 
 \item{domainAnnotation}{A string or data frame specifying the domain annotation track.
-If a data frame is provided, refer to blessy.usingCustomAnnotation.}
+If a data frame is provided, refer to `blessy.usingCustomAnnotation`.}
 
 \item{transcriptCount}{A data frame containing transcript counts with:
 - \code{TranscriptID}: Transcript IDs (required as the first column).
 - Additional columns representing RNA-seq counts for biological samples (must be numeric).}
+
+\item{coordinates}{Logical flag indicating whether to include genomic coordinates and strand information
+in the \code{DoCo} string during the phasing step. Defaults to \code{TRUE}.}
 }
 \value{
 A list containing:
-  - \code{phasing_dict}: The phasing dictionary data frame containing information of Gene, DoCo and Transcript.
-  - \code{doco_counts}: The DoCo-level count data frame created by aggregating transcripts of the same DoCo.
+  - \code{phasing_dict}: The phasing dictionary data frame containing information of Gene, DoCo, and Transcript.
+  - \code{doco_count}: The DoCo-level count data frame created by aggregating transcripts of the same DoCo.
 }
 \description{
 This wrapper function performs the entire workflow of fetching domain and transcript tracks,
@@ -44,11 +53,25 @@ transcriptCount <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# Run blessy
-results <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
+# Run blessy with coordinates (default)
+results_with_coords <- blessy(
+  genomeAssembly, 
+  transcriptAnnotation, 
+  domainAnnotation, 
+  transcriptCount
+)
+
+# Run blessy without coordinates
+results_no_coords <- blessy(
+  genomeAssembly, 
+  transcriptAnnotation, 
+  domainAnnotation, 
+  transcriptCount,
+  coordinates = FALSE
+)
 
 # Access the results
-phasing_dict <- results$phasing_dict
-doco_counts <- results$doco_counts
+phasing_dict <- results_with_coords$phasing_dict
+doco_count <- results_with_coords$doco_count
 
 }

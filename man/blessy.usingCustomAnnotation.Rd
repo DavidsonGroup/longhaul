@@ -4,24 +4,27 @@
 \alias{blessy.usingCustomAnnotation}
 \title{blessy's Wrapper Function using Custom Annotation}
 \usage{
-blessy.usingCustomAnnotation(tx_df, domain_df, tx_count)
+blessy.usingCustomAnnotation(tx_df, domain_df, tx_count, coordinates = TRUE)
 }
 \arguments{
-\item{tx_df}{A BED-like data frame representing transcript annotation. The annotation must include information on exon locations in `blockCount`, `blockSizes`, `blockStarts` and gene name in `geneName`.}
+\item{tx_df}{A BED-like data frame representing transcript annotation or a GRangesList object. The annotation must include information on exon locations in \code{blockCount}, \code{blockSizes}, \code{blockStarts}, and gene name in \code{geneName}.}
 
-\item{domain_df}{A BED-like data frame representing domain annotation. The annotation must include information on domain block locations in in `blockCount`, `blockSizes`, `blockStarts`.}
+\item{domain_df}{A BED-like data frame representing domain annotation or a GRangesList object. The annotation must include information on domain block locations in \code{blockCount}, \code{blockSizes}, \code{blockStarts}.}
 
 \item{tx_count}{A data frame containing transcript counts with:
 - \code{TranscriptID}: Transcript IDs (required as the first column).
 - Additional columns representing RNA-seq counts for biological samples (must be numeric).}
+
+\item{coordinates}{Logical flag indicating whether to include genomic coordinates and strand information
+in the \code{DoCo} string during the phasing step. Defaults to \code{TRUE}.}
 }
 \value{
 A list containing:
-  - \code{phasing_dict}: The phasing dictionary data frame
-  - \code{doco_counts}: The DoCo-level count data frame
+  - \code{phasing_dict}: The phasing dictionary data frame.
+  - \code{doco_count}: The DoCo-level count data frame.
 }
 \description{
 This wrapper function performs the workflow starting from mapping domains to transcripts
-using user-provided transcript and domain annotation data frames of BED-like format. It creates a phasing dictionary
-and generates DoCo-level count data frames.
+using user-provided transcript and domain annotation data frames of BED-like format or GRangesList objects.
+It creates a phasing dictionary and generates DoCo-level count data frames.
 }

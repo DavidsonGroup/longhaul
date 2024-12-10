@@ -10,8 +10,6 @@
 #'
 #' @return A deduplicated data frame of transcript-domain mapping.
 #'
-#' @import dplyr 
-#' @import tidyr
 #'
 #' @examples
 #' # Example data frame
@@ -27,137 +25,76 @@
 #'
 #' @export
 blessy.domainDeduplication <- function(tx_domain_df) {
-  # Add a unique identifier for each row/domain
-  tx_domain_df <- tx_domain_df %>% mutate(row_id = row_number())
+  # Parse coordinates into lists of numeric vectors
+  exon_starts_list <- strsplit(as.character(tx_domain_df$exonStarts), ",")
+  exon_ends_list <- strsplit(as.character(tx_domain_df$exonEnds), ",")
+  block_starts_list <- strsplit(as.character(tx_domain_df$blockStarts), ",")
+  block_ends_list <- strsplit(as.character(tx_domain_df$blockEnds), ",")
   
-  # Split and unnest exonStarts and exonEnds into long format
-  exon_df <- tx_domain_df %>%
-    select(row_id, exonStarts, exonEnds) %>%
-    mutate(
-      exonStarts = strsplit(as.character(exonStarts), ","),
-      exonEnds = strsplit(as.character(exonEnds), ",")
-    ) %>%
-    unnest(c(exonStarts, exonEnds)) %>%
-    mutate(
-      exonStarts = as.numeric(exonStarts),
-      exonEnds = as.numeric(exonEnds)
-    ) %>%
-    group_by(row_id) %>%
-    mutate(
-      exon_idx = row_number()
-    ) %>%
-    ungroup()
+  # Convert all to numeric at once
+  exon_starts_list <- lapply(exon_starts_list, as.numeric)
+  exon_ends_list <- lapply(exon_ends_list, as.numeric)
+  block_starts_list <- lapply(block_starts_list, as.numeric)
+  block_ends_list <- lapply(block_ends_list, as.numeric)
   
-  # Split and unnest blockStarts and blockEnds into long format
-  block_df <- tx_domain_df %>%
-    select(row_id, blockStarts, blockEnds) %>%
-    mutate(
-      blockStarts = strsplit(as.character(blockStarts), ","),
-      blockEnds = strsplit(as.character(blockEnds), ",")
-    ) %>%
-    unnest(c(blockStarts, blockEnds)) %>%
-    mutate(
-      blockStarts = as.numeric(blockStarts),
-      blockEnds = as.numeric(blockEnds)
-    ) %>%
-    group_by(row_id) %>%
-    mutate(
-      block_idx = row_number(),
-      total_blocks = n(),
-      is_single_block = total_blocks == 1,
-      is_first_block = block_idx == 1,
-      is_last_block = block_idx == total_blocks
-    ) %>%
-    ungroup()
+  is_valid_domain <- mapply(function(exon_starts, exon_ends, block_starts, block_ends) {
+    # Number of blocks and exons
+    n_blocks <- length(block_starts)
+    n_exons <- length(exon_starts)
+    
+    # Helper function to find which exons a block could belong to
+    # A block belongs to an exon if blockStart >= exonStart and blockEnd <= exonEnd
+    find_exons_for_block <- function(bstart, bend) {
+      which(bstart >= exon_starts & bend <= exon_ends)
+    }
+    
+    # Single-block domain validation
+    if (n_blocks == 1) {
+      candidates <- find_exons_for_block(block_starts, block_ends)
+      # Must map exactly to one exon
+      return(length(candidates) == 1)
+    }
+    
+    # Multi-block domain validation:
+    # Each block should map exactly to one exon with specific conditions:
+    # - First block: blockEnds == exonEnds
+    # - Last block: blockStarts == exonStarts
+    # - Intermediate blocks: exact match of both start and end
+    
+    mapped_exons <- integer(n_blocks)  # store the exon index each block maps to
+    
+    for (i in seq_len(n_blocks)) {
+      candidates <- find_exons_for_block(block_starts[i], block_ends[i])
+      
+      # If no or multiple candidate exons, invalid
+      if (length(candidates) != 1) {
+        return(FALSE)
+      }
+      
+      # Check boundary conditions
+      exon_idx <- candidates
+      if (i == 1) {
+        # First block: must end at exon boundary
+        if (block_ends[i] != exon_ends[exon_idx]) return(FALSE)
+      } else if (i == n_blocks) {
+        # Last block: must start at exon boundary
+        if (block_starts[i] != exon_starts[exon_idx]) return(FALSE)
+      } else {
+        # Intermediate blocks: must match exon start/end exactly
+        if (block_starts[i] != exon_starts[exon_idx] || block_ends[i] != exon_ends[exon_idx]) return(FALSE)
+      }
+      
+      mapped_exons[i] <- exon_idx
+    }
+    
+    # Check that exons mapped by consecutive blocks are consecutive integers (no exon skipping)
+    # This means the differences between consecutive mapped exon indices should be exactly 1
+    if (!all(diff(mapped_exons) == 1)) return(FALSE)
+    
+    # If all conditions are met
+    return(TRUE)
+  }, exon_starts_list, exon_ends_list, block_starts_list, block_ends_list)
   
-  # Map blocks to exons with the specified criteria
-  block_exon_df <- block_df %>%
-    inner_join(exon_df, by = "row_id", relationship = "many-to-many") %>%
-    filter(
-      # Ensure blocks are within exon boundaries
-      blockStarts >= exonStarts & blockEnds <= exonEnds
-    ) %>%
-    filter(
-      # For single-block domains
-      (is_single_block & blockStarts >= exonStarts & blockEnds <= exonEnds) |
-        # For multiple-block domains
-        (!is_single_block & (
-          # First block: blockEnds matches exonEnds
-          (is_first_block & blockEnds == exonEnds) |
-            # Last block: blockStarts matches exonStarts
-            (is_last_block & blockStarts == exonStarts) |
-            # Middle blocks: exact match on both starts and ends
-            (!is_first_block & !is_last_block & blockStarts == exonStarts & blockEnds == exonEnds)
-        ))
-    ) %>%
-    group_by(row_id, block_idx) %>%
-    summarise(
-      exon_idx = list(unique(exon_idx)),
-      .groups = 'drop'
-    ) %>%
-    mutate(
-      exon_count = lengths(exon_idx)
-    )
-  
-  # Identify domains with invalid blocks (blocks that do not map uniquely to one exon)
-  invalid_blocks <- block_exon_df %>%
-    filter(exon_count != 1)
-  
-  domains_with_invalid_blocks <- unique(invalid_blocks$row_id)
-  
-  # Valid blocks (blocks that map uniquely to one exon)
-  valid_blocks <- block_exon_df %>%
-    filter(exon_count == 1) %>%
-    mutate(
-      exon_idx = unlist(exon_idx)
-    )
-  
-  # Collect exon indices per domain, ordered by block_idx
-  exon_indices_per_domain <- valid_blocks %>%
-    arrange(row_id, block_idx) %>%
-    group_by(row_id) %>%
-    summarise(
-      exon_indices = list(exon_idx),
-      .groups = 'drop'
-    )
-  
-  # Total number of blocks per domain
-  block_counts <- block_df %>%
-    group_by(row_id) %>%
-    summarise(
-      total_blocks = n(),
-      .groups = 'drop'
-    )
-  
-  # Compile domain information
-  domain_info <- block_counts %>%
-    left_join(exon_indices_per_domain, by = "row_id") %>%
-    mutate(
-      valid_blocks = lengths(exon_indices),
-      # Check for any invalid blocks or exon skipping
-      has_issue = (row_id %in% domains_with_invalid_blocks) |
-        (valid_blocks != total_blocks) |
-        (
-          # Check for exon skipping
-          sapply(exon_indices, function(exons) {
-            if (length(exons) <= 1) {
-              return(FALSE)  # No exon skipping possible with one exon
-            } else {
-              return(!all(diff(exons) == 1))
-            }
-          })
-        )
-    )
-  
-  # Filter out domains with issues
-  valid_domains <- domain_info %>%
-    filter(!has_issue) %>%
-    select(row_id)
-  
-  # Keep only the valid domains in the original dataframe
-  tx_domain_df <- tx_domain_df %>%
-    semi_join(valid_domains, by = "row_id") %>%
-    select(-row_id)
-  
-  return(tx_domain_df)
+  # Filter the data frame to keep only valid domains
+  tx_domain_df[is_valid_domain, , drop = FALSE]
 }

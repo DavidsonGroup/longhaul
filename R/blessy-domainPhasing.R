@@ -10,6 +10,8 @@
 #'   - \code{chromStart}, \code{chromEnd}: Start and end positions for the domain.
 #'   - \code{strand}: Strand information for the domain.
 #'   - \code{Gene}: Gene identifier.
+#' @param coordinates Logical flag indicating whether to include genomic coordinates and strand information
+#'   in the \code{DoCo} string. Defaults to \code{TRUE}.
 #'
 #' @return The input data frame with an additional column, \code{DoCo}, which contains the domain-combination
 #'  string for each transcript.
@@ -22,24 +24,29 @@
 #' mapping_df <- data.frame(
 #'   Transcript = c("tx1", "tx1", "tx2"),
 #'   Domain = c("domainA", "domainB", NA),
-#'   chrom2 = c("chr1", "chr1", "chr2"),
+#'   chrom = c("chr1", "chr1", "chr2"),
 #'   chromStart = c(1000, 2000, 3000),
 #'   chromEnd = c(1100, 2100, 3100),
-#'   strand2 = c("+", "-", "+"),
-#'   strand = c("+", "+", "-"),
+#'   strand = c("+", "-", "+"),
 #'   Gene = c("geneA", "geneA", "geneB")
 #' )
 #'
-#' # Apply domain phasing
-#' phased_df <- blessy.domainPhasing(mapping_df)
+#' # Apply domain phasing with coordinates
+#' phased_df_coords <- blessy.domainPhasing(mapping_df)
+#'
+#' # Apply domain phasing without coordinates
+#' phased_df_no_coords <- blessy.domainPhasing(mapping_df, coordinates = FALSE)
 #'
 #' @export
-blessy.domainPhasing <- function(tx_domain_df) {
+blessy.domainPhasing <- function(tx_domain_df, coordinates = TRUE) {
   # Ensure required columns exist
   required_columns <- c("Transcript", "Domain", "chrom", "chromStart", "chromEnd", "strand", "Gene")
   missing_columns <- setdiff(required_columns, colnames(tx_domain_df))
   if (length(missing_columns) > 0) {
-    stop("The dataframe must contain the following columns: ", paste(missing_columns, collapse = ", "))
+    stop(
+      "The dataframe must contain the following columns: ",
+      paste(missing_columns, collapse = ", ")
+    )
   }
   
   # Ensure chromStart and chromEnd are numeric for proper sorting
@@ -58,17 +65,27 @@ blessy.domainPhasing <- function(tx_domain_df) {
     ) %>%
     mutate(
       DoCo = if (all(is.na(Domain))) {
+        # If all Domain entries are NA, only include the Gene name
         paste0(";;; ", first(Gene))
       } else {
-        # Create domain info strings
-        domain_info <- ifelse(
-          is.na(Domain),
-          NA_character_,
-          paste0(
-            Domain, "::", chrom, ":", chromStart, "-", chromEnd, "(", strand, ")"
+        # Create domain info strings based on the 'coordinates' parameter
+        domain_info <- if (coordinates) {
+          ifelse(
+            is.na(Domain),
+            NA_character_,
+            paste0(
+              Domain, "::", chrom, ":", chromStart, "-", chromEnd, "(", strand, ")"
+            )
           )
-        )
-        # Concatenate domain info strings
+        } else {
+          ifelse(
+            is.na(Domain),
+            NA_character_,
+            Domain
+          )
+        }
+        
+        # Concatenate non-NA domain info strings with commas and append Gene name
         domain_string <- paste(na.omit(domain_info), collapse = ",")
         paste0(domain_string, ";;; ", first(Gene))
       }
