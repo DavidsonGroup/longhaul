@@ -349,12 +349,12 @@ These hypothetical transcripts and domains have been converted to BED files, whi
 
 ```R
 # Read and rename hypothetical transcript A BED into an R BED-like data frame
-tx_df <- read.table("transcripts_blocks_new.bed")
+tx_df <- read.table("example_transcript.bed")
 colnames(tx_df) <- c("chrom", "chromStart", "chromEnd", "name", "score", "strand",
                         "thickStart", "thickEnd", "itemRgb", "blockCount", "blockSizes", "blockStarts", "geneName")
 
 # Read and rename hypothetical domains BED into an R BED-like data frame
-domain_df <- read.table("domains_blocks_new.bed")
+domain_df <- read.table("example_domains.bed")
 colnames(domain_df) <- c("chrom", "chromStart", "chromEnd", "name", "score", "strand",
                      "thickStart", "thickEnd", "itemRgb", "blockCount", "blockSizes", "blockStarts")
 
