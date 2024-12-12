@@ -19,25 +19,47 @@
 
 
 ## Dependencies
+The longhaul package requires several dependencies from both CRAN and Bioconductor to function properly. It is important to note that longhaul is compatible with R version 4.4 or higher, as some dependencies, such as UCSC.utils, may not run on older versions of R. Additionally, please ensure compatibility with the current Bioconductor version.
 
-The following packages are required for longhaul's modules:
-- GenomicRanges
-- dplyr
-- tidyr
-- UCSC.utils
-- stats
+### Installing Dependencies
 
-Which can be installed via:
+Before installing longhaul, ensure your R installation is version 4.4 or later. You can check your R version by running R.version.string in your R console.
+
+```R
+# Check R version
+R.Version()$version.string  # Ensure R version 4.4 or higher
+```
+
+To install the required dependencies, follow these steps:
+
+### Install Core Dependencies from CRAN
+
+These packages are available directly from CRAN and can be installed using the standard install.packages method.
 
 ```R
 # Install core dependencies from CRAN
 install.packages(c("dplyr", "tidyr"))
+```
+### Install Bioconductor Dependencies
 
-# Install Bioconductor dependencies
+Packages from Bioconductor require the BiocManager for installation. 
+
+```R
+# Install BiocManager if not already installed
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
+# Install packages from Bioconductor
 BiocManager::install(c("GenomicRanges", "UCSC.utils"))
+
+```
+### Bioconductor Version
+```R
+# Check Bioconductor version
+BiocManager::version()
+
+# Install the latest version of Bioconductor if needed
+BiocManager::install(version = "3.20")
 
 ```
 
