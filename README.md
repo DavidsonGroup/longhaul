@@ -97,8 +97,26 @@ The DoCo class can be used to group transcripts of an existing RNA-Seq count. Be
 
 ![The Concept of Domain Combination](figures/DoCo_concept.png)
 
+#### Quick use
+*blessy* performs two major tasks: creating a DoCo class, and aggregating transcript count based on created DoCo class. *blessy* requires identifiers for transcript and domain annotations along with their assembly identifier, and a transcript count. Please ensure that the transcript ID in the count file is compatible with that of the transcript annotation. The basic use of *blessy* is as follows:
 
-#### General Usage
+```R
+# Run blessy
+blessy_results <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
+
+# View the DoCo class created from chosen annotations 
+DoCo_class <- blessy_results$phasing_dict
+
+# View the DoCo count created from aggregated transcript count
+DoCo_count <- blessy_results$doco_count
+
+```
+
+NOTE: The transcript and domain annotation identifiers correspond to the values inside the 'Table' option, and assembly identifier can be found within 'Assembly' [using the UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables). To see a valid example, please refer to the General Use below.
+
+
+
+#### General Use
 *blessy* requires annotation tracks for transcripts and protein domains to create the DoCo class. Additionally, an RNA-Seq transcript count must be provided for aggregating count at transcript-level to DoCo-level, once the information on DoCo class is generated. 
 
 ##### Using pre-defined UCSC annotation tracks
