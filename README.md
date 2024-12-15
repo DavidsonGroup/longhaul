@@ -9,10 +9,9 @@
 - [Overview](#overview)
 - [Modules](#modules)
   - [blessy](#blessy)
-    - [General Usage](#general-usage)
-        - [Using pre-defined UCSC annotation tracks](#using-pre-defined-ucsc-annotation-tracks)
-        - [Using custom annotation tracks](#using-custom-annotation-tracks)
-        - [Output](#output)
+    - [Quick Use](#quick-use) 
+    - [General Use](#general-use)  
+    - [Custom Use](#custom-use)
     - [Functions and Use Cases](#functions-and-use-cases)
 - [License](#license)
 - [Contact](#contact)
@@ -93,12 +92,12 @@ or 'DoCo' for short.
 
 In the figure below, the hypothetical gene A has 4 transcripts (Tx1, Tx2, Tx3, Tx4). On each transcript, regions that encode for protein domains (PD1, PD2) can be found. Transcripts with the similar domain phasing are categorized into the same 'Domain Combination' or 'DoCo' group. DoCo class is then considered per gene, making DoCo an intermediate feature of gene and transcript. Of note, transcripts with no domain (Tx4) are still categorized into an ‘empty’ DoCo group (;;; geneA).
 
-The DoCo class can be used to group transcripts of an existing RNA-Seq count. Besides making biologically equivalent transcript groups, the count of each DoCo is the aggregated count of its component transcripts, addressing the previous issue of low count per feature in differential transcript analyses such as DTE or DTU. 
+The DoCo class can be used to check and group transcripts of an existing RNA-Seq count. Besides making transcript groups with equivalent biology, the count of each DoCo is the aggregated count of its component transcripts, addressing the previous issue of low count per feature in differential transcript analyses such as DTE or DTU. 
 
 ![The Concept of Domain Combination](figures/DoCo_concept.png)
 
 #### Quick use
-*blessy* performs two major tasks: creating a DoCo class, and aggregating transcript count based on created DoCo class. *blessy* requires identifiers for transcript and domain annotations along with their assembly identifier, and a transcript count. Please ensure that the transcript ID in the count file is compatible with that of the transcript annotation. The basic use of *blessy* is as follows:
+*blessy* performs two major tasks: creating a DoCo class, and aggregating transcript count based on created DoCo class. *blessy* requires UCSC identifiers for transcript and domain annotations along with their assembly identifier, and a transcript count. Please ensure that the transcript ID in the count file is compatible with that of the transcript annotation. The basic use of *blessy* is as follows:
 
 ```R
 # Run blessy
@@ -112,33 +111,63 @@ DoCo_count <- blessy_results$doco_count
 
 ```
 
-NOTE: The transcript and domain annotation identifiers correspond to the values inside the 'Table' option, and assembly identifier can be found within 'Assembly' [using the UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables). To see a valid example, please refer to the General Use below.
+NOTE: The transcript and domain annotation UCSC identifiers correspond to the values inside the 'Table' option, and assembly identifier can be found within 'Assembly' [of the UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables). To see a valid example, please refer to the General Use below.
 
-
+============================================================================================
+<br> 
 
 #### General Use
-*blessy* requires annotation tracks for transcripts and protein domains to create the DoCo class. Additionally, an RNA-Seq transcript count must be provided for aggregating count at transcript-level to DoCo-level, once the information on DoCo class is generated. 
 
-##### Using pre-defined UCSC annotation tracks
-The default mode to run *blessy* is using pre-defined annotation tracks on the UCSC Genome Browser and an user-provided transcript count. *blessy* will return a list containing two R data frames: a dictionary showing the hierarchical relationship of gene, DoCo and transcript from the annotations of choice, and the count table at DoCo level gained from aggregating the transcript count using this dictionary. If you would like to know which annotations can be used for blessy, you can find them [HERE](https://genome.ucsc.edu/cgi-bin/hgTables). We highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation, as *blessy* is tailored around these annotations.
+*blessy* performs two tasks: 
 
+1. Create the DoCo class 
+
+*blessy* takes in a transcript and a domain annotation, and map domains to each transcript they belong to based on genomic coordinates provided by the provided annotations. Next, irrelevant mappings are filtered. *blessy* then checks for the domain phasing and the gene of each transcript to categorize the transcripts into different DoCo groups. Finally, *blessy* summarizes the hierarchical order of gene, DoCo and transcript into a phasing dictionary. 
+
+2. Aggregate transcript count to DoCo count
+
+Once the information of the DoCo class is generated, *blessy* aggregate transcripts within a provided count into the DoCo-level count by matching the Transcript ID from the built dictionary and the given count. 
+
+<br> 
+Based on these tasks, the wrapper function of *blessy* requires transcript and protein domain annotations to create the DoCo class. The default mode of *blessy* uses annotation identifiers of the UCSC Genome Browser, along with their assembly identifier. Additionally, an RNA-Seq transcript count must be provided for aggregating count at transcript-level to DoCo-level, once the information on DoCo class is generated. 
+
+<br> 
 
 ```R
+# Wrapper function for blessy
 blessy_outs <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
+
+# Accessing the DoCo class dictionary
+doco_class <- blessy_outs$phasing_dict
+
+# Accessing the DoCo count
+doco_count <- blessy_outs$doco_count
 ```
 
 **genomeAssembly** - A string specifying the UCSC assembly identifier used for the two transcriptAnnotation and domainAnnotation below. This string corresponds to the identifier which can be found at the end of the 'Assembly' option in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables), or the 'Database' seen in the 'Data format description' page of a specific track. (e.g., "hg38").
 
-**transcriptAnnotation** - A string specifying the UCSC table identifier of a transcript track. This string corresponds to the 'Table' option in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables), or the 'Primary Table' seen in the 'Data format description' page of a specific track. (e.g., "wgEncodeGencodeBasicV44").
+**transcriptAnnotation** - A string specifying the UCSC table identifier of a transcript track. This string corresponds to the 'Table' option in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables), or the 'Primary Table' seen in the 'Data format description' page of a specific track. (e.g., "wgEncodeGencodeBasicV44"). 
 
 **domainAnnotation** - A string specifying the UCSC table identifier of a domain track. This string corresponds to the 'Table' option in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables), or the 'Primary Table' seen in the 'Data format description' page of a specific track. (e.g., "unipDomain").
 
-**transcriptCount** - An R data frame containing RNA-Seq transcript count. The first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
+**transcriptCount** - An R data frame containing RNA-Seq transcript count. The first column must be named 'TranscriptID' storing string values of transcript identifiers, and the IDs must be compatible with what found in transcriptAnnotation. Other columns are considered numeric count across different biological samples.
 
-##### Using custom annotation tracks
-Here *blessy* allows users to provide their own annotation tracks of choice, leaving room for annotation customization. For example, users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Use Cases](#functions-and-use-cases)), and integrate these domain tracks into one comprehensive domain annotation using simple R commands:
+NOTE: We highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation, as *blessy* is tailored around these annotations.
+
+[FOR DEMONSTRATION OF FULL WORKING EXAMPLE, AND WHAT TO DO WITH THE OUTPUT (EDGER)] 
+
+
+#### Custom use 
+
+*blessy* includes the blessy.usingCustomAnnotation() function that works on custom or user-provided annotations in scenarios such as:
+
+1. Use multiple tracks for transcript or domain annotations
+
+*blessy* allows users to provide their own annotation tracks of choice, leaving room for annotation customization. For example, users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Use Cases](#functions-and-use-cases)), and integrate these domain tracks into one comprehensive domain annotation using simple R commands:
 
 ```R
+
+
 # Fetch domain tracks on the UCSC Genome Browser
 unipDomain <- blessy.getDomainTrack("hg38", "unipDomain")
 unipInterest <- blessy.getDomainTrack("hg38", "unipInterest")
@@ -153,7 +182,13 @@ filtered_df <- combined_df %>%
 # Sort 
 domain_df <- filtered_df %>% 
   arrange(chrom, chromStart) 
+
+# Perform blessy
+blessy_outs_custom <- blessy.usingCustomAnnotation()
+
 ```
+
+2. Use user-provided annotation data frame
 
 To run *blessy* using annotations **NOT** from UCSC, users must ensure that these annotations are first read into BED-like R data frames. These data frames must include the following columns:
 
@@ -188,24 +223,11 @@ blessy_outs_custom <- blessy.usingCustomAnnotation(customTranscriptAnnotation, c
 
 **transcriptCount** - An R data frame containing RNA-Seq transcript count. The first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
 
+3. Use user-provided GRangesList objects: 
 
-##### Output
+*blessy* works with GRangesList objects storing transcript and domain annotations. 
 
-*blessy* returns a list containing two data frames: 
-  - **phasing_dict** - A dictionary showing the hierarchical relationship of gene, DoCo and transcript from the annotations of choice
-  - **doco_count** - A count table at DoCo level
-
-These data frames can simply be accessed with:
-
-```R
-blessy_outs <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
-dictionary <- blessy_outs$phasing_dict
-count <- blessy_outs$doco_count
-view(dictionary)
-view(count)
-```
-
-For visualization of the dictionary and the DoCo count, please refer to the blessy.createPhasingDictionary and blessy.createDoCoCount functions (see [Functions and Use Cases](#functions-and-use-cases)).
+<br>
 
 #### Functions and Use Cases:
 Here, we outline the component functions of blessy along with use-cases and arguments for each, to assist users in customizing the module to fit their specific needs. The functions are listed based on their order in the blessy pipeline:
