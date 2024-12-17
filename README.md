@@ -113,8 +113,7 @@ DoCo_count <- blessy_results$doco_count
 
 NOTE: The transcript and domain annotation UCSC identifiers correspond to the values inside the 'Table' option, and assembly identifier can be found within 'Assembly' [of the UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables). To see a valid example, please refer to the General Use below.
 
-============================================================================================
-<br> 
+<hr style="border: 1px solid #000;">
 
 #### General Use
 
@@ -128,7 +127,6 @@ NOTE: The transcript and domain annotation UCSC identifiers correspond to the va
 
 Once the information of the DoCo class is generated, *blessy* aggregate transcripts within a provided count into the DoCo-level count by matching the Transcript ID from the built dictionary and the given count. 
 
-<br> 
 Based on these tasks, the wrapper function of *blessy* requires transcript and protein domain annotations to create the DoCo class. The default mode of *blessy* uses annotation identifiers of the UCSC Genome Browser, along with their assembly identifier. Additionally, an RNA-Seq transcript count must be provided for aggregating count at transcript-level to DoCo-level, once the information on DoCo class is generated. 
 
 <br> 
@@ -136,12 +134,6 @@ Based on these tasks, the wrapper function of *blessy* requires transcript and p
 ```R
 # Wrapper function for blessy
 blessy_outs <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
-
-# Accessing the DoCo class dictionary
-doco_class <- blessy_outs$phasing_dict
-
-# Accessing the DoCo count
-doco_count <- blessy_outs$doco_count
 ```
 
 **genomeAssembly** - A string specifying the UCSC assembly identifier used for the two transcriptAnnotation and domainAnnotation below. This string corresponds to the identifier which can be found at the end of the 'Assembly' option in the [UCSC Table Browser](https://genome.ucsc.edu/cgi-bin/hgTables), or the 'Database' seen in the 'Data format description' page of a specific track. (e.g., "hg38").
@@ -152,45 +144,145 @@ doco_count <- blessy_outs$doco_count
 
 **transcriptCount** - An R data frame containing RNA-Seq transcript count. The first column must be named 'TranscriptID' storing string values of transcript identifiers, and the IDs must be compatible with what found in transcriptAnnotation. Other columns are considered numeric count across different biological samples.
 
-NOTE: We highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation, as *blessy* is tailored around these annotations.
+**NOTE**: We highly recommend using the GENCODE or NCBI RefSeq tracks for transcript annotation and UniProt or Pfam tracks for domain annotation, as *blessy* is tailored around these annotations.
 
-[FOR DEMONSTRATION OF FULL WORKING EXAMPLE, AND WHAT TO DO WITH THE OUTPUT (EDGER)] 
+For demonstration, we included an example transcript count which can be found in */data*, and a runnable code example on how to perform differential Doco analysis below. 
 
+Firstly, *blessy* is loaded via longhaul. For the transcript count, it must be loaded as an R data frame. The first column must be named 'TranscriptID', and the other columns must store numeric count across different samples. 
+
+```R
+# Load library
+library(longhaul)
+
+# Load transcript count
+tx_count <- read.table("example_transcript_count.txt")
+
+# Check for correct naming 
+colnames(tx_count)[1] <- "TranscriptID"
+
+head(tx_count, 5)
+
+  TranscriptID ctrl1_sorted ctrl2_sorted ctrl3_sorted de1_sorted de2_sorted de3_sorted
+1     BambuTx1     10.00000      7.07535      6.00000   10.51017    3.00000          4
+2     BambuTx2      4.00000      0.00000      3.00000    4.25762    4.00000          4
+3     BambuTx3      3.25000      0.00000      6.22631    5.64950    2.48888          0
+4     BambuTx4      2.00000      3.00000     10.00000    7.00000    9.00000         10
+5     BambuTx5      9.81388      3.93677      7.00000    3.44883   12.00000          6
+
+```
+In this example, we perform blessy using the The GENCODE Genes track for transcript annotation and the UniProt/SwissProt for domain annotation. *blessy* can simply be run as:
+
+```R
+# Perform blessy
+blessy_outs <- blessy(genomeAssembly = "hg38", transcriptAnnotation = "wgEncodeGencodeCompV44", 
+                      domainAnnotation = "unipDomain", transcriptCount = tx_count)
+
+Pipeline completed. Returning results...
+Warning messages:
+...
+5: In blessy.createDoCoCount(phasing_dict, transcriptCount) :
+  Number of uncommon transcripts grouped: 363
+```
+Typically, a *blessy* run takes from 3 to 6 minutes depending on the size of the transcript count. As the DoCo count is generated from looking up the transcript IDs in the initial count using the phasing dictionary, there may be transcript not found in our dictionary. These uncommon transcript includes novel transcripts (denoted as 'BambuTx' in our example), or transcript not present in used annotation. *blessy* returns a warning on the total number of uncommon transcripts, and group them to the ';;;' DoCo. 
+<br>
+
+Once *blessy* finished, it returns a dictionary showing the hierarchical relationship between gene, DoCo and transcript, as well as the count data now at DoCo level. 
+
+```R
+# Get phasing dictionary and DoCo count 
+phasing_dict <- blessy_outs$phasing_dict
+doco_count <- blessy_outs$doco_count
+```
+The DoCo count can be used to perform a new analysis termed 'Differential DoCo Usage', or DDU for short. Like DTU, DDU helps discovering the domain phasings/combinations with the most drastic changes within a gene between two biological conditions. Here, we perform an example DDU analysis on the created DoCo count above.
+ 
+```R
+# Downstream analysis: Differential DoCo Usage
+
+# Load library
+library(edgeR)
+
+# Filter uncommon/unassigned transcripts
+doco_count <- doco_count[doco_count$DoCo != ";;;", ]
+
+# Create a GeneID column 
+doco_count$GeneID <- sub(".*;;;\\s*", "", doco_count$DoCo)
+doco_count <- doco_count[, c("DoCo", "GeneID", setdiff(names(doco_count), c("DoCo", "GeneID")))]
+doco_count <- doco_count[-1, ]
+
+# Create DGEList object for differential analysis
+genes <- data.frame(GeneID = doco_count$GeneID, DoCo=doco_count$DoCo)
+counts <- doco_count[,3:8]
+group <- c(rep(1:2, each=3))
+y <- DGEList(counts=counts, group=group, genes=genes)
+
+# Proceed normalization
+keep <- filterByExpr(y, group=group)
+table(keep)
+y <- y[keep,,keep.lib.sizes=FALSE]
+y <- normLibSizes(y)
+y$samples
+
+# Estimate dispersion
+design <- model.matrix(~group)
+y <- estimateDisp(y,design)
+
+# Fit models
+fit <- glmQLFit(y,design)
+lrt <- glmQLFTest(fit)
+
+
+# Perform Differential DoCo Usage
+sp <- diffSpliceDGE(fit, geneid="GeneID", exonid ="DoCo")
+DDU_top_DoCos <- topSpliceDGE(sp, test = 'exon', n = Inf)
+DDU_top_genes <- topSpliceDGE(sp, test = 'gene', n = Inf)
+
+# DDU result at DoCo level
+head(DDU_top_DoCos)
+      GeneID
+15861  RPL27
+15363    B2M
+15364    B2M
+22746 SQSTM1
+23226 COL1A1
+23227 COL1A1
+                                                                                                                                                                                                    DoCo
+15861                                                                                                                                                           KOW::chr17:42998768-43002675(+);;; RPL27
+15363                           Immunoglobulin...::chr15:44715499-44715685(+),Ig-like C1-type::chr15:44715427-44715694(+),Ig-like::chr15:44715427-44715667(+),Ig-like::chr15:44711600-44715694(+);;; B2M
+15364                                                               Immunoglobulin...::chr15:44715499-44715685(+),Ig-like C1-type::chr15:44715427-44715694(+),Ig-like::chr15:44715427-44715667(+);;; B2M
+22746 UBA::chr5:179833781-179836572(+),ZZ-type::chr5:179824086-179824258(+),zinc finger::chr5:179823922-179824075(+),ZZ-type::chr5:179823922-179824075(+),ZZ-type::chr5:179823922-179824057(+);;; SQSTM1
+23226                                                                                                           VWFC::chr17:50199762-50199939(-),Fibrillar coll...::chr17:50185504-50186769(-);;; COL1A1
+23227                                                                                                                                                         VWFC::chr17:50199762-50199939(-);;; COL1A1
+
+          logFC   exon.F      P.Value          FDR
+15861  7.495314 298.2791 1.285091e-15 1.761860e-12
+15363 -4.698908 237.7012 1.500290e-14 8.042396e-12
+15364  4.513314 234.4811 1.759824e-14 8.042396e-12
+22746  5.829288 269.7784 7.045348e-14 2.414793e-11
+23226 -4.864328 218.7054 6.598336e-13 1.809264e-10
+23227  5.092494 212.9908 8.602816e-13 1.965743e-10
+
+# DDU result at gene level
+head(DDU_top_genes)
+
+      GeneID NExons   gene.F      P.Value          FDR
+15364    B2M      3 236.4201 2.416614e-17 1.536966e-14
+15861  RPL27      2 348.9054 1.994207e-16 6.341578e-14
+22746 SQSTM1      2 428.2814 5.739265e-16 8.744643e-14
+23227 COL1A1      2 431.6961 6.080076e-16 8.744643e-14
+15041    DES      3 208.2958 6.874720e-16 8.744643e-14
+22563 TUBA1A      2 401.8365 1.256326e-15 1.331706e-13
+
+
+```
+<hr style="border: 1px solid #000;">
 
 #### Custom use 
 
-*blessy* includes the blessy.usingCustomAnnotation() function that works on custom or user-provided annotations in scenarios such as:
+There can be several scenarios where users would prefer **NOT** to use annotations directly fetched from the main *blessy* wrapper, which can be done with the alternative blessy.usingCustomAnnotation() wrapper: 
 
-1. Use multiple tracks for transcript or domain annotations
+1. Using user-provided annotations
 
-*blessy* allows users to provide their own annotation tracks of choice, leaving room for annotation customization. For example, users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Use Cases](#functions-and-use-cases)), and integrate these domain tracks into one comprehensive domain annotation using simple R commands:
-
-```R
-
-
-# Fetch domain tracks on the UCSC Genome Browser
-unipDomain <- blessy.getDomainTrack("hg38", "unipDomain")
-unipInterest <- blessy.getDomainTrack("hg38", "unipInterest")
-
-# Combine the two data frames
-combined_df <- bind_rows(unipDomain, unipInterest)
-
-# Filter out rows containing "Disordered"
-filtered_df <- combined_df %>% 
-  filter(!grepl("Disordered", name)) 
-
-# Sort 
-domain_df <- filtered_df %>% 
-  arrange(chrom, chromStart) 
-
-# Perform blessy
-blessy_outs_custom <- blessy.usingCustomAnnotation()
-
-```
-
-2. Use user-provided annotation data frame
-
-To run *blessy* using annotations **NOT** from UCSC, users must ensure that these annotations are first read into BED-like R data frames. These data frames must include the following columns:
+To run *blessy* using annotations **NOT** from UCSC, users must ensure that their provided annotations are first read into BED-like R data frames. These data frames must include the following columns:
 
 **chrom**- Chromosome or scaffold name of the feature.
 
@@ -216,18 +308,51 @@ To run *blessy* using annotations **NOT** from UCSC, users must ensure that thes
 ```R
 blessy_outs_custom <- blessy.usingCustomAnnotation(customTranscriptAnnotation, customDomainAnnotation, transcriptCount)
 ```
+**customTranscriptAnnotation** - A BED-like data frame or a GRangesList representing transcript annotation with required columns/information. 
 
-**customTranscriptAnnotation** - A BED-like data frame representing transcript annotation of the required format. 
-
-**customDomainAnnotation** - A BED-like data frame representing domain annotation of the required format. 
+**customDomainAnnotation** - A BED-like data frame or a GRangesList representing domain annotation with required columns/information. 
 
 **transcriptCount** - An R data frame containing RNA-Seq transcript count. The first column must be named 'TranscriptID' storing string values of transcript identifiers. Other columns are considered numeric count across different biological samples.
 
-3. Use user-provided GRangesList objects: 
+2. Using multiple tracks for transcript or domain annotations
 
-*blessy* works with GRangesList objects storing transcript and domain annotations. 
+Users can choose to retrieve multiple domain annotation tracks via blessy.getDomainTrack() (see [Functions and Use Cases](#functions-and-use-cases)), and integrate these domain tracks into one comprehensive domain annotation using simple R commands. Once the final annotation data frame is created, it can be use as an input to blessy.usingCustomAnnotation().
+
+```R
+
+# Load library
+library(longhaul)
+library(dplyr)
+
+# Fetch domain tracks from the UCSC Genome Browser
+unipDomain <- blessy.getDomainTrack("hg38", "unipDomain")
+unipInterest <- blessy.getDomainTrack("hg38", "unipInterest")
+
+# Combine the two data frames
+combined_df <- bind_rows(unipDomain, unipInterest)
+
+# Filter out rows containing "Disordered"
+filtered_df <- combined_df %>% 
+  filter(!grepl("Disordered", name)) 
+
+# Sort 
+domain_df <- filtered_df %>% 
+  arrange(chrom, chromStart) 
+
+# Load transcript count
+tx_count <- read.table("example_transcript_count.txt")
+
+# Fetch transcript annotation from the UCSC browser
+tx_df <- blessy.getDomainTrack("hg38", "wgEncodeGencodeCompV44")
+
+# Perform blessy using custom annotations
+blessy_outs_custom <- blessy.usingCustomAnnotation(tx_df, domain_df, tx_count)
+
+```
 
 <br>
+
+<hr style="border: 1px solid #000;">
 
 #### Functions and Use Cases:
 Here, we outline the component functions of blessy along with use-cases and arguments for each, to assist users in customizing the module to fit their specific needs. The functions are listed based on their order in the blessy pipeline:
@@ -257,7 +382,7 @@ transcript_annotation <- blessy.getTranscriptTrack("hg38", "wgEncodeGencodeBasic
 domain_annotation <- blessy.getDomainTrack("hg38", "unipDomain")
 
 # Output visualization
-> head(transcript_annotation)
+head(transcript_annotation)
   chrom chromStart  chromEnd              name score strand thickStart  thickEnd itemRgb blockCount
 1  chr1   67092164  67134970 ENST00000684719.1     0      -   67093004  67127240   0,0,0          8
 2  chr1   67092164  67231852 ENST00000371007.6     0      -   67093004  67127240   0,0,0          8
@@ -294,7 +419,7 @@ transcript_annotation <- data.frame(
 transcript_GRL <- blessy.dfToGRangesList(transcript_annotation)
 
 # Output visualization
-> head(transcript_GRL)
+head(transcript_GRL)
 
 GRangesList object of length 3:
 $`1`
@@ -363,7 +488,7 @@ domain_grangesList <- blessy.dfToGRangesList(domain_annotation)
 mapping_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, transcript_annotation, domain_annotation)
 
 # Output visualization
-> head(mapping_df)
+head(mapping_df)
   chrom txStart txEnd Transcript strand cdsStart cdsEnd exonCount exonSizes exonRelativeStarts  Gene chromStart chromEnd  Domain
 1  chr1    1000  1500        tx1      +     1000   1500         2   100,200              0,400 geneA       1200     1300 domainA
 2  chr1    2000  2500        tx2      -     2000   2500         2   150,250              0,500 geneB       2100     2200 domainB
@@ -392,7 +517,7 @@ mapping_df <- data.frame(
 mapping_df <- blessy.addStartsEnds(mapping_df)
 
 # Output visualization
-> head(mapping_df)
+head(mapping_df)
   txStart exonRelativeStarts exonSizes chromStart chromStarts blockSizes     exonStarts       exonEnds
 1    1000          0,100,200 100,50,25       1000   0,150,300  100,50,25 1000,1100,1200 1100,1150,1225
 2    2000           0,50,100  80,40,30       2000   0,100,200   80,40,30 2000,2050,2100 2080,2090,2130
@@ -456,7 +581,7 @@ mapping_df <- data.frame(
 mapping_df <- blessy.domainPhasing(mapping_df)
 
 # Output visualization
-> head(mapping_df)
+head(mapping_df)
 # A tibble: 3 × 8
   Transcript Domain  chrom chromStart chromEnd strand Gene  DoCo                                                
   <chr>      <chr>   <chr>      <dbl>    <dbl> <chr>  <chr> <chr>                                               
@@ -486,7 +611,7 @@ transcript_annotation <- data.frame(
 phasing_dict <- blessy.createPhasingDictionary(mapping_df, transcript_annotation)
 
 # Output visualization
-> head(phasing_dict)
+head(phasing_dict)
   Transcript                                DoCo              Gene
 1        tx1             domainA::chr1:1000-1100(+);;; geneA geneA
 2        tx2                           ;;; geneB             geneB
@@ -521,7 +646,7 @@ Warning messages:
   Number of uncommon transcripts grouped: 2
 
 # Output visualization
-> head(doco_count)
+head(doco_count)
             DoCo       Sample1     Sample2
 1           ;;;            12          18
 2     D1,D2;;; GeneA       10          15
