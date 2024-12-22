@@ -1,4 +1,4 @@
-# longhaul
+# longhaul (in development)
 
 **longhaul** is a multi-purpose R package developed by the Davidson Lab. It is designed to facilitate various bioinformatics analyses focusing on long-read RNA-Seq via its component modules. 
 
