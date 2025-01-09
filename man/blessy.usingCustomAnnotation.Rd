@@ -4,7 +4,13 @@
 \alias{blessy.usingCustomAnnotation}
 \title{blessy's Wrapper Function using Custom Annotation}
 \usage{
-blessy.usingCustomAnnotation(tx_df, domain_df, tx_count, coordinates = TRUE)
+blessy.usingCustomAnnotation(
+  tx_df,
+  domain_df,
+  tx_count,
+  unique_domain = FALSE,
+  coordinates = TRUE
+)
 }
 \arguments{
 \item{tx_df}{A BED-like data frame representing transcript annotation or a GRangesList object. The annotation must include information on exon locations in \code{blockCount}, \code{blockSizes}, \code{blockStarts}, and gene name in \code{geneName}.}

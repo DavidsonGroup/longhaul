@@ -9,6 +9,7 @@ blessy(
   transcriptAnnotation,
   domainAnnotation,
   transcriptCount,
+  unique_domain = FALSE,
   coordinates = TRUE
 )
 }

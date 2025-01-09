@@ -4,12 +4,14 @@
 \alias{blessy.domainDeduplication}
 \title{Domain Deduplication for Transcript-Domain Mapping}
 \usage{
-blessy.domainDeduplication(tx_domain_df)
+blessy.domainDeduplication(tx_domain_df, unique_domain = FALSE)
 }
 \arguments{
 \item{tx_domain_df}{A data frame containing transcript-domain mapping data, including columns:
 - \code{exonStarts}, \code{exonEnds}: Comma-separated exon start and end positions.
 - \code{blockStarts}, \code{blockEnds}: Comma-separated block start and end positions.}
+
+\item{unique_domain}{A logical value indicating whether to further deduplicate domains by keeping only unique domains per transcript. Default is \code{FALSE}.}
 }
 \value{
 A deduplicated data frame of transcript-domain mapping.
