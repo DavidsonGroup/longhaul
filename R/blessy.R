@@ -56,7 +56,7 @@
 #' doco_count <- results_with_coords$doco_count
 #'
 #' @export
-blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount, coordinates = TRUE) {
+blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount, unique_domain = FALSE, coordinates = TRUE) {
   # Step 1: Fetch transcript and domain annotation tracks
   cat("Step 1/9: Fetching transcript and domain annotation tracks...\n")
   tx_df <- blessy.getTranscriptTrack(genomeAssembly, transcriptAnnotation)
@@ -78,7 +78,7 @@ blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, trans
   
   # Step 5: Deduplicate domain mappings
   cat("Step 5/9: Deduplicating domain mappings...\n")
-  deduplicated_df <- blessy.domainDeduplication(starts_ends_df)
+  deduplicated_df <- blessy.domainDeduplication(starts_ends_df, unique_domain = unique_domain)
   
   # Step 6: Create phasing information with the 'coordinates' parameter
   cat(sprintf("Step 6/9: Creating phasing information (coordinates = %s)...\n", coordinates))

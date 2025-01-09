@@ -5,8 +5,8 @@
 #'
 #' @param df A data frame containing BED-like annotations. Required columns include:
 #'   - \code{chrom}: Chromosome names.
-#'   - \code{chromStart}: Start positions of genomic ranges (numeric).
-#'   - \code{chromEnd}: End positions of genomic ranges (numeric).
+#'   - \code{thickStart}: Start positions of genomic ranges (numeric).
+#'   - \code{thickEnd}: End positions of genomic ranges (numeric).
 #'   - \code{strand}: Strand information (+, -, or *).
 #'   Optional additional metadata columns can be included.
 #'
@@ -18,8 +18,8 @@
 #' # Example BED-like data frame
 #' bed_df <- data.frame(
 #'   chrom = c("chr1", "chr1", "chr2"),
-#'   chromStart = c(1000, 2000, 3000),
-#'   chromEnd = c(1500, 2500, 3500),
+#'   thickStart = c(1000, 2000, 3000),
+#'   thickEnd = c(1500, 2500, 3500),
 #'   strand = c("+", "-", "+"),
 #'   name = c("feature1", "feature2", "feature3")
 #' )
@@ -30,7 +30,7 @@
 #' @export
 blessy.dfToGRangesList <- function(df) {
   # Ensure required columns exist
-  required_columns <- c("chrom", "chromStart", "chromEnd", "strand")
+  required_columns <- c("chrom", "thickStart", "thickEnd", "strand")
   missing_columns <- setdiff(required_columns, colnames(df))
   if (length(missing_columns) > 0) {
     stop(
@@ -42,16 +42,16 @@ blessy.dfToGRangesList <- function(df) {
   }
   
   # Convert required columns to appropriate types
-  df$chromStart <- as.numeric(df$chromStart)
-  df$chromEnd <- as.numeric(df$chromEnd)
+  df$thickStart <- as.numeric(df$thickStart)
+  df$thickEnd <- as.numeric(df$thickEnd)
   df$strand <- as.character(df$strand)
   
   # Create a GRanges object directly from the data frame
   gr <- makeGRangesFromDataFrame(
     df,
     seqnames.field = "chrom",
-    start.field = "chromStart",
-    end.field = "chromEnd",
+    start.field = "thickStart",
+    end.field = "thickEnd",
     strand.field = "strand",
     keep.extra.columns = TRUE
   )

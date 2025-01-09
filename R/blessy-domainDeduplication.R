@@ -7,9 +7,9 @@
 #' @param tx_domain_df A data frame containing transcript-domain mapping data, including columns:
 #'   - \code{exonStarts}, \code{exonEnds}: Comma-separated exon start and end positions.
 #'   - \code{blockStarts}, \code{blockEnds}: Comma-separated block start and end positions.
+#' @param unique_domain A logical value indicating whether to further deduplicate domains by keeping only unique domains per transcript. Default is \code{FALSE}.
 #'
 #' @return A deduplicated data frame of transcript-domain mapping.
-#'
 #'
 #' @examples
 #' # Example data frame
@@ -24,7 +24,7 @@
 #' refined_df <- blessy.domainDeduplication(intersect_df)
 #'
 #' @export
-blessy.domainDeduplication <- function(tx_domain_df) {
+blessy.domainDeduplication <- function(tx_domain_df, unique_domain = FALSE) {
   # Parse coordinates into lists of numeric vectors
   exon_starts_list <- strsplit(as.character(tx_domain_df$exonStarts), ",")
   exon_ends_list <- strsplit(as.character(tx_domain_df$exonEnds), ",")
@@ -96,5 +96,12 @@ blessy.domainDeduplication <- function(tx_domain_df) {
   }, exon_starts_list, exon_ends_list, block_starts_list, block_ends_list)
   
   # Filter the data frame to keep only valid domains
-  tx_domain_df[is_valid_domain, , drop = FALSE]
+  tx_domain_df <- tx_domain_df[is_valid_domain, , drop = FALSE]
+  
+  # Deduplicate rows by Transcript and Domain if unique_domain is TRUE
+  if (unique_domain) {
+    tx_domain_df <- tx_domain_df[!duplicated(tx_domain_df[, c("Transcript", "Domain")]), ]
+  }
+  
+  return(tx_domain_df)
 }

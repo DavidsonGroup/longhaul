@@ -17,7 +17,7 @@
 #'   - \code{doco_count}: The DoCo-level count data frame.
 #'
 #' @export
-blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, coordinates = TRUE) {
+blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, unique_domain = FALSE, coordinates = TRUE) {
   # Step 2: Check input types and convert to GRangesList if necessary
   if (is(tx_df, "GRangesList") && is(domain_df, "GRangesList")) {
     cat("Step 2/9: Input parameters are already GRangesList objects. Skipping conversion...\n")
@@ -40,7 +40,7 @@ blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, coordinates
   
   # Step 5: Deduplicate domain mappings
   cat("Step 5/9: Deduplicating domain mappings...\n")
-  deduplicated_df <- blessy.domainDeduplication(starts_ends_df)
+  deduplicated_df <- blessy.domainDeduplication(starts_ends_df, unique_domain = unique_domain)
   
   # Step 6: Create phasing information with the 'coordinates' parameter
   cat(sprintf("Step 6/9: Creating phasing information (coordinates = %s)...\n", coordinates))

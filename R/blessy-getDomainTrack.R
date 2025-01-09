@@ -37,9 +37,13 @@ blessy.getDomainTrack <- function(genome, track) {
     }
   }
   
-  # Step 5: Select and reorder only the required columns
+  # Step 5: Set thickStart and thickEnd to chromStart and chromEnd respectively
+  track_data$thickStart <- track_data$chromStart
+  track_data$thickEnd <- track_data$chromEnd
+  
+  # Step 6: Select and reorder only the required columns
   bed_df <- track_data[, required_columns, drop = FALSE]
   
-  # Step 6: Return the BED-formatted data frame
+  # Step 7: Return the BED-formatted data frame
   return(bed_df)
 }
