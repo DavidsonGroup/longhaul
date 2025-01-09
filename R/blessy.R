@@ -12,6 +12,8 @@
 #' @param transcriptCount A data frame containing transcript counts with:
 #'   - \code{TranscriptID}: Transcript IDs (required as the first column).
 #'   - Additional columns representing RNA-seq counts for biological samples (must be numeric).
+#' @param unique_domain Logical flag indicating whether to deduplicate domains by keeping only unique domains per transcript. 
+#'   Defaults to \code{FALSE}.
 #' @param coordinates Logical flag indicating whether to include genomic coordinates and strand information
 #'   in the \code{DoCo} string during the phasing step. Defaults to \code{TRUE}.
 #'
