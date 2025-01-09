@@ -49,7 +49,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 # Install packages from Bioconductor
-BiocManager::install(c("GenomicRanges", "UCSC.utils"))
+BiocManager::install(c("GenomicRanges", "UCSC.utils", "rtracklayer"))
 
 ```
 ### Bioconductor Version
@@ -100,6 +100,9 @@ The DoCo class can be used to check and group transcripts of an existing RNA-Seq
 *blessy* performs two major tasks: creating a DoCo class, and aggregating transcript count based on created DoCo class. *blessy* requires UCSC identifiers for transcript and domain annotations along with their assembly identifier, and a transcript count. Please ensure that the transcript ID in the count file is compatible with that of the transcript annotation. The basic use of *blessy* is as follows:
 
 ```R
+# Load library
+library(longhaul)
+
 # Run blessy
 blessy_results <- blessy(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount)
 
