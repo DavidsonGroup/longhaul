@@ -10,7 +10,7 @@
 #'   - \code{exonRelativeStarts}: Comma-separated relative exon start positions.
 #'   - \code{exonSizes}: Comma-separated exon sizes.
 #'   - \code{chromStart}: Chromosomal start position.
-#'   - \code{chromStarts}: Comma-separated relative block start positions.
+#'   - \code{domainBlockStarts}: Comma-separated relative block start positions.
 #'   - \code{blockSizes}: Comma-separated block sizes.
 #'
 #' @return The input data frame with four new columns appended:
@@ -27,7 +27,7 @@
 #'   exonRelativeStarts = c("0,100,200", "0,50,100"),
 #'   exonSizes = c("100,50,25", "80,40,30"),
 #'   chromStart = c(1000, 2000),
-#'   chromStarts = c("0,150,300", "0,100,200"),
+#'   domainBlockStarts = c("0,150,300", "0,100,200"),
 #'   blockSizes = c("100,50,25", "80,40,30")
 #' )
 #'
@@ -38,7 +38,7 @@
 blessy.addStartsEnds <- function(df) {
   # Ensure required columns
   required_columns <- c("txStart", "exonRelativeStarts", "exonSizes", 
-                        "chromStart", "chromStarts", "blockSizes")
+                        "chromStart", "domainBlockStarts", "blockSizes")
   missing_columns <- setdiff(required_columns, colnames(df))
   if (length(missing_columns) > 0) {
     stop(paste("The following required columns are missing:", paste(missing_columns, collapse = ", ")))
@@ -48,7 +48,7 @@ blessy.addStartsEnds <- function(df) {
   exon_rel_starts_list <- strsplit(as.character(df$exonRelativeStarts), ",")
   exon_sizes_list <- strsplit(as.character(df$exonSizes), ",")
   
-  block_starts_list <- strsplit(as.character(df$chromStarts), ",")
+  block_starts_list <- strsplit(as.character(df$domainBlockStarts), ",")
   block_sizes_list <- strsplit(as.character(df$blockSizes), ",")
   
   # Compute exon starts/ends

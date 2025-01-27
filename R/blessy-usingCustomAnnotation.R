@@ -20,43 +20,46 @@
 #'
 #' @export
 blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, unique_domain = FALSE, coordinates = TRUE) {
-  # Step 2: Check input types and convert to GRangesList if necessary
-  if (is(tx_df, "GRangesList") && is(domain_df, "GRangesList")) {
-    cat("Step 2/9: Input parameters are already GRangesList objects. Skipping conversion...\n")
-    tx_grangesList <- tx_df
-    domain_grangesList <- domain_df
-  } else {
-    cat("Step 2/9: Converting data frames to GRangesList objects...\n")
-    tx_grangesList <- blessy.dfToGRangesList(tx_df)
-    domain_grangesList <- blessy.dfToGRangesList(domain_df)
+  # Validation for tx_df
+  cat("Step 1/8: Validating transcript data frame format...\n")
+  tx_required_cols <- c("chrom", "txStart", "txEnd", "strand", "blockCount", "blockSizes", "blockStarts", "geneName")
+  if (!all(tx_required_cols %in% colnames(tx_df))) {
+    stop("The transcript data frame (tx_df) must contain the following columns: ", paste(tx_required_cols, collapse = ", "))
+  }
+  
+  # Validation for domain_df
+  cat("Step 2/8: Validating domain data frame format...\n")
+  domain_required_cols <- c("chrom", "chromStart", "chromEnd", "strand", "blockCount", "blockSizes", "blockStarts")
+  if (!all(domain_required_cols %in% colnames(domain_df))) {
+    stop("The domain data frame (domain_df) must contain the following columns: ", paste(domain_required_cols, collapse = ", "))
   }
   
   # Step 3: Map domains to transcripts
-  cat("Step 3/9: Mapping domains to transcripts...\n")
-  mapped_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, tx_df, domain_df)
+  cat("Step 3/8: Matching domains to transcripts...\n")
+  mapped_df <- blessy.mapDomainToTranscript(tx_df, domain_df)
   
   # Step 4: Add exon and block starts/ends
-  cat("Step 4/9: Adding exon and block starts/ends...\n")
+  cat("Step 4/8: Adding exon and block starts/ends...\n")
   cat("Note: Patience is bitter, but its fruit is sweet. \n")
   starts_ends_df <- blessy.addStartsEnds(mapped_df)
   
   # Step 5: Deduplicate domain mappings
-  cat("Step 5/9: Deduplicating domain mappings...\n")
+  cat("Step 5/8: Deduplicating domain mappings...\n")
   deduplicated_df <- blessy.domainDeduplication(starts_ends_df, unique_domain = unique_domain)
   
   # Step 6: Create phasing information with the 'coordinates' parameter
-  cat(sprintf("Step 6/9: Creating phasing information (coordinates = %s)...\n", coordinates))
+  cat("Step 6/8: Creating phasing information...\n", coordinates)
   phased_df <- blessy.domainPhasing(deduplicated_df, coordinates = coordinates)
   
   # Step 7: Create the phasing dictionary
-  cat("Step 7/9: Creating the phasing dictionary...\n")
+  cat("Step 7/8: Creating the phasing dictionary...\n")
   phasing_dict <- blessy.createPhasingDictionary(phased_df, tx_df)
   
   # Step 8: Create DoCo-level count
-  cat("Step 8/9: Creating DoCo-level count...\n")
+  cat("Step 8/8: Creating DoCo-level count...\n")
   doco_count <- blessy.createDoCoCount(phasing_dict, tx_count)
   
-  # Return the results
+  # Step 9: Return the results
   cat("Pipeline completed. Returning results...\n")
   return(list(
     phasing_dict = phasing_dict,

@@ -2,65 +2,35 @@
 % Please edit documentation in R/blessy-mapDomainToTranscript.R
 \name{blessy.mapDomainToTranscript}
 \alias{blessy.mapDomainToTranscript}
-\title{Map Domains to Transcripts By Finding GRangesLists' Overlaps}
+\title{Map Domains to Transcripts Using BED-Like Data Frames}
 \usage{
-blessy.mapDomainToTranscript(
-  tx_grangesList,
-  domain_grangesList,
-  tx_df,
-  domain_df
-)
+blessy.mapDomainToTranscript(tx_df, domain_df)
 }
 \arguments{
-\item{tx_grangesList}{A `GRangesList` or `CompressedGRangesList` object representing transcripts.}
+\item{tx_df}{A BED-like data frame representing transcripts. **Required** columns:
+- \code{chrom}: Chromosome identifier.
+- \code{thickStart}, \code{thickEnd}: Genomic start and end coordinates used for overlap.
+- \code{strand}: Strand information (+, -, or *).
+- \code{exonStarts}, \code{exonEnds} (for downstream domain deduplication).
+- \code{blockStarts}, \code{blockEnds} (for downstream domain deduplication).
+Optionally, additional fields (e.g., \code{chromStart}, \code{chromEnd}, \code{blockCount}, 
+\code{name}, \code{geneName}) may be included and will be renamed or preserved as needed.}
 
-\item{domain_grangesList}{A `GRangesList` or `CompressedGRangesList` object representing domains.}
-
-\item{tx_df}{A BED-like data frame representing transcripts, including columns like `chrom`, `chromStart`, `chromEnd`, `strand`, etc.}
-
-\item{domain_df}{A BED-like data frame representing domains, including columns like `chrom`, `chromStart`, `chromEnd`, `strand`, etc.}
+\item{domain_df}{A BED-like data frame representing domains. **Required** columns:
+- \code{chrom}: Chromosome identifier.
+- \code{thickStart}, \code{thickEnd}: Genomic start and end coordinates used for overlap.
+- \code{strand}: Strand information (+, -, or *).
+- \code{blockStarts}, \code{blockEnds}: Comma-separated domain block start/end coordinates
+  (needed for downstream domain deduplication).
+Optionally, additional fields (e.g., \code{name}) may be included.}
 }
 \value{
-A data frame with where each row represents mapping of a domain to a transcripts.
+A data frame in which each row represents a mapped domain-to-transcript overlap.
+        Columns from both \code{tx_df} and \code{domain_df} are combined; some are renamed
+        for clarity and downstream processing (e.g., domain deduplication).
 }
 \description{
-This function maps domains to transcripts by identifying overlaps between two GRangesLists representing transcripts and domains.
-It returns a mapping data frame containing all columns from both inputs for matching rows.
-Column names are renamed for clarity and downstream analysis, and duplicate columns are removed.
-}
-\examples{
-# Example BED-like data frames
-tx_df <- data.frame(
-  chrom = c("chr1", "chr1", "chr2"),
-  chromStart = c(1000, 2000, 3000),
-  chromEnd = c(1500, 2500, 3500),
-  name = c("tx1", "tx2", "tx3"),
-  strand = c("+", "-", "+"),
-  thickStart = c(1000, 2000, 3000),
-  thickEnd = c(1500, 2500, 3500),
-  blockCount = c(2, 2, 2),
-  blockSizes = c("100,200", "150,250", "200,300"),
-  blockStarts = c("0,400", "0,500", "0,600"),
-  geneName = c("geneA", "geneB", "geneC"),
-  stringsAsFactors = FALSE
-)
-
-domain_df <- data.frame(
-  chrom = c("chr1", "chr1", "chr2"),
-  chromStart = c(1200, 2100, 3100),
-  chromEnd = c(1300, 2200, 3200),
-  name = c("domainA", "domainB", "domainC"),
-  strand = c("+", "-", "+"),
-  blockStarts = c("0", "0", "0"),
-  stringsAsFactors = FALSE
-)
-
-# Example GRangesLists
-tx_grangesList <- blessy.dfToGRangesList(tx_df)
-
-domain_grangesList <- blessy.dfToGRangesList(domain_df)
-
-# Map domains to transcripts and combine data frames
-intersection_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, tx_df, domain_df)
-
+This function takes two BED-like data frames (one for transcripts, one for domains),
+converts them internally to `GRangesList` objects, then finds overlaps to map domains
+to transcripts. It returns a merged data frame with renamed columns for clarity.
 }

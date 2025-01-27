@@ -60,41 +60,36 @@
 #' @export
 blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount, unique_domain = FALSE, coordinates = TRUE) {
   # Step 1: Fetch transcript and domain annotation tracks
-  cat("Step 1/9: Fetching transcript and domain annotation tracks...\n")
+  cat("Step 1/7: Fetching transcript and domain annotation tracks...\n")
   tx_df <- blessy.getTranscriptTrack(genomeAssembly, transcriptAnnotation)
   domain_df <- blessy.getDomainTrack(genomeAssembly, domainAnnotation)
   
-  # Step 2: Convert data frames to GRangesList objects
-  cat("Step 2/9: Converting data frames to GRangesList objects...\n")
-  tx_grangesList <- blessy.dfToGRangesList(tx_df)
-  domain_grangesList <- blessy.dfToGRangesList(domain_df)
+  # Step 2: Map domains to transcripts
+  cat("Step 2/7: Matching domains to transcripts...\n")
+  mapped_df <- blessy.mapDomainToTranscript(tx_df, domain_df)
   
-  # Step 3: Map domains to transcripts
-  cat("Step 3/9: Mapping domains to transcripts...\n")
-  mapped_df <- blessy.mapDomainToTranscript(tx_grangesList, domain_grangesList, tx_df, domain_df)
-  
-  # Step 4: Add exon and block starts/ends
-  cat("Step 4/9: Adding exon and block starts/ends...\n")
+  # Step 3: Add exon and block starts/ends
+  cat("Step 3/7: Adding exon and block starts/ends...\n")
   cat("Note: Patience is bitter, but its fruit is sweet. \n")
   starts_ends_df <- blessy.addStartsEnds(mapped_df)
   
-  # Step 5: Deduplicate domain mappings
-  cat("Step 5/9: Deduplicating domain mappings...\n")
+  # Step 4: Deduplicate domain mappings
+  cat("Step 4/7: Deduplicating domain mappings...\n")
   deduplicated_df <- blessy.domainDeduplication(starts_ends_df, unique_domain = unique_domain)
   
-  # Step 6: Create phasing information with the 'coordinates' parameter
-  cat(sprintf("Step 6/9: Creating phasing information (coordinates = %s)...\n", coordinates))
+  # Step 5: Create phasing information with the 'coordinates' parameter
+  cat("Step 5/7: Creating phasing information...\n")
   phased_df <- blessy.domainPhasing(deduplicated_df, coordinates = coordinates)
   
-  # Step 7: Create the phasing dictionary
-  cat("Step 7/9: Creating the phasing dictionary...\n")
+  # Step 6: Create the phasing dictionary
+  cat("Step 6/7: Creating the phasing dictionary...\n")
   phasing_dict <- blessy.createPhasingDictionary(phased_df, tx_df)
   
-  # Step 8: Create DoCo-level count
-  cat("Step 8/9: Creating DoCo-level count...\n")
+  # Step 7: Create DoCo-level count
+  cat("Step 7/7: Creating DoCo-level count...\n")
   doco_count <- blessy.createDoCoCount(phasing_dict, transcriptCount)
   
-  # Step 9: Return the results
+  # Step 8: Return the results
   cat("Pipeline completed. Returning results...\n")
   return(list(
     phasing_dict = phasing_dict,

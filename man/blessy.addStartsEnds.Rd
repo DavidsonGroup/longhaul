@@ -12,7 +12,7 @@ blessy.addStartsEnds(df)
 - \code{exonRelativeStarts}: Comma-separated relative exon start positions.
 - \code{exonSizes}: Comma-separated exon sizes.
 - \code{chromStart}: Chromosomal start position.
-- \code{chromStarts}: Comma-separated relative block start positions.
+- \code{domainBlockStarts}: Comma-separated relative block start positions.
 - \code{blockSizes}: Comma-separated block sizes.}
 }
 \value{
@@ -34,7 +34,7 @@ df <- data.frame(
   exonRelativeStarts = c("0,100,200", "0,50,100"),
   exonSizes = c("100,50,25", "80,40,30"),
   chromStart = c(1000, 2000),
-  chromStarts = c("0,150,300", "0,100,200"),
+  domainBlockStarts = c("0,150,300", "0,100,200"),
   blockSizes = c("100,50,25", "80,40,30")
 )
 

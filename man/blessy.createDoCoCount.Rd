@@ -7,22 +7,22 @@
 blessy.createDoCoCount(dict, count_df)
 }
 \arguments{
-\item{dict}{A data frame containing the `Transcript` and `DoCo` columns:
+\item{dict}{A data frame containing the Transcript and DoCo columns:
 - \code{Transcript}: Transcript identifier.
 - \code{DoCo}: Domain-combination string (grouping information).}
 
-\item{count_df}{A data frame containing RNA-seq counts with the following columns:
-- \code{TranscriptID}: Transcript IDs (required as the first column).
-- Additional columns representing RNA-seq counts for biological samples (must be numeric).}
+\item{count_df}{A data frame containing RNA-seq counts with:
+- \code{rownames}: Transcript IDs.
+- Columns representing RNA-seq counts for biological samples (must be numeric).}
 }
 \value{
-A data frame aggregated at the `DoCo` level with the following columns:
+A data frame aggregated at the DoCo level with the following columns:
   - \code{DoCo}: Domain-combination string.
   - RNA-seq counts for biological samples.
 }
 \description{
-This function aggregates RNA-seq counts from a count data frame at the `DoCo` level. 
-Transcripts are grouped based on their `DoCo` assignment from a dictionary data frame (`dict`),
+This function aggregates RNA-seq counts from a count data frame at the DoCo level. 
+Transcripts are grouped based on their DoCo assignment from a dictionary data frame (dict),
 and counts are summed across biological samples. Unmatched transcripts are grouped into the DoCo
 class ";;;".
 }
@@ -36,10 +36,9 @@ dict <- data.frame(
 
 # Example count data frame
 count_df <- data.frame(
-  TranscriptID = c("Tx1", "Tx2", "Tx4", "Tx5"),
   Sample1 = c(10, 20, 5, 7),
   Sample2 = c(15, 25, 8, 10),
-  stringsAsFactors = FALSE
+  row.names = c("Tx1", "Tx2", "Tx4", "Tx5")
 )
 
 # Create DoCo-level counts
