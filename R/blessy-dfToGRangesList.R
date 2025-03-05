@@ -12,8 +12,9 @@
 #'
 #' @return A `CompressedGRangesList` object where each element corresponds to a row in the input data frame.
 #'
-#' @import GenomicRanges
-#'
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom S4Vectors split
+#' 
 #' @examples
 #' # Example BED-like data frame
 #' bed_df <- data.frame(
@@ -25,7 +26,7 @@
 #' )
 #'
 #' # Convert the data frame to a GRangesList
-#' grl <- blessy.dfToGRanges(bed_df)
+#' grl <- blessy.dfToGRangesList(bed_df)
 #' 
 #' @export
 blessy.dfToGRangesList <- function(df) {

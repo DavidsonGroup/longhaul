@@ -8,7 +8,7 @@
 #'
 #' @return A data frame in BED format containing the transcript annotation track.
 #'
-#' @import UCSC.utils
+#' @importFrom UCSC.utils fetch_UCSC_track_data
 #'
 #' @examples
 #' # Example: Fetch the "wgEncodeGencodeBasicV44" annotation transcript annotation track

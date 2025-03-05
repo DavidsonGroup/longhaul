@@ -9,9 +9,9 @@
 #'   If a data frame is provided, refer to `blessy.usingCustomAnnotation`.
 #' @param domainAnnotation A string or data frame specifying the domain annotation track.
 #'   If a data frame is provided, refer to `blessy.usingCustomAnnotation`.
-#' @param transcriptCount A data frame containing transcript counts with:
-#'   - \code{TranscriptID}: Transcript IDs (required as the first column).
-#'   - Additional columns representing RNA-seq counts for biological samples (must be numeric).
+#' @param transcriptCount A data frame containing RNA-seq counts with:
+#'   - \code{rownames}: Transcript IDs.
+#'   - Columns representing RNA-seq counts for biological samples (must be numeric).
 #' @param unique_domain Logical flag indicating whether to deduplicate domains by keeping only unique domains per transcript. 
 #'   Defaults to \code{FALSE}.
 #' @param coordinates Logical flag indicating whether to include genomic coordinates and strand information
@@ -30,10 +30,9 @@
 #' domainAnnotation <- "unipDomain"
 #'
 #' transcriptCount <- data.frame(
-#'   TranscriptID = c("tx1", "tx2", "tx3"),
 #'   Sample1 = c(10, 20, 30),
 #'   Sample2 = c(15, 25, 35),
-#'   stringsAsFactors = FALSE
+#'   row.names = c("ENST00000000412", "ENST00000000442", "ENST00000001008")
 #' )
 #'
 #' # Run blessy with coordinates (default)

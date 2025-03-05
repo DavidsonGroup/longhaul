@@ -22,18 +22,18 @@ available.}
 A data frame (tibble) in BED-like format with the following columns:
 \itemize{
   \item \strong{chrom} - Chromosome or scaffold name (from \code{seqnames}).
-  \item \strong{chromStart} - Transcript start position (minimum of all exon starts).
-  \item \strong{chromEnd} - Transcript end position (maximum of all exon ends).
+  \item \strong{txStart} - Transcript start position (minimum of all exon starts).
+  \item \strong{txEnd} - Transcript end position (maximum of all exon ends).
   \item \strong{name} - The \code{transcript_id}.
   \item \strong{score} - A numeric score (set to 0 by default).
   \item \strong{strand} - The strand (\code{+} or \code{-}).
-  \item \strong{thickStart} - Currently set to the same as \code{chromStart}.
-  \item \strong{thickEnd} - Currently set to the same as \code{chromEnd}.
+  \item \strong{thickStart} - Currently set to the same as \code{txStart}.
+  \item \strong{thickEnd} - Currently set to the same as \code{txEnd}.
   \item \strong{itemRgb} - Color value, default \code{"0,0,0"}.
   \item \strong{blockCount} - Number of exons (blocks).
   \item \strong{blockSizes} - A comma-separated string of exon lengths.
   \item \strong{blockStarts} - A comma-separated string of exon start offsets
-        relative to \code{chromStart}.
+        relative to \code{txStart}.
   \item \strong{geneName} - Either \code{gene_name} (default) or \code{gene_id}
         (if \code{geneID} = \code{TRUE}).
 }

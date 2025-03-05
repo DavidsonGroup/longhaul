@@ -1,21 +1,17 @@
 Package: longhaul
-Version: 0.1
-Date: 2024-11-23
+Version: 0.1.1
+Date: 2025-03-05
 Title: A tool for differential analysis on phased protein domains
 Description: blessy creates a new feature class for differential analysis, termed ‘Domain Combination’ or ‘DoCo’ for short, by grouping transcripts with similar protein domains phasing in their coding sequences
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: GPL (>= 2)
 Encoding: UTF-8
 Author: Huu Minh Liem Le <lehuuminhliem@gmail.com>
-Maintainer: Huu Minh Liem Le <lehuuminhliem@gmail.com>
+Maintainer: Huu Minh Liem Le <lehuuminhliem@gmail.com>, Feng Yan <alexyfyf@163.com>
 RoxygenNote: 7.3.2
 Imports:
-    dplyr,
-    tidyr,
     GenomicRanges,
-    IRanges,
-    httr,
-    jsonlite,
     UCSC.utils,
-    S4Vectors,
-    stats
+    data.table,
+    dplyr,
+    rtracklayer,
+    S4Vectors
