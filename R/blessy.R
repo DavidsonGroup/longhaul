@@ -57,38 +57,19 @@
 #' doco_count <- results_with_coords$doco_count
 #'
 #' @export
-blessy <- function(genomeAssembly, transcriptAnnotation, domainAnnotation, transcriptCount, unique_domain = FALSE, coordinates = TRUE) {
-  # Step 1: Fetch transcript and domain annotation tracks
-  cat("Step 1/7: Fetching transcript and domain annotation tracks...\n")
-  tx_df <- blessy.getTranscriptTrack(genomeAssembly, transcriptAnnotation)
-  domain_df <- blessy.getDomainTrack(genomeAssembly, domainAnnotation)
+
+blessy <- function(genomeAssembly, transcriptAnnotation,
+       domainAnnotation, transcriptCount,
+       unique_domain = FALSE, coordinates = TRUE) {
+
   
-  # Step 2: Map domains to transcripts
-  cat("Step 2/7: Matching domains to transcripts...\n")
-  mapped_df <- blessy.mapDomainToTranscript(tx_df, domain_df)
-  
-  # Step 3: Add exon and block starts/ends
-  cat("Step 3/7: Adding exon and block starts/ends...\n")
-  cat("Note: Patience is bitter, but its fruit is sweet. \n")
-  starts_ends_df <- blessy.addStartsEnds(mapped_df)
-  
-  # Step 4: Deduplicate domain mappings
-  cat("Step 4/7: Deduplicating domain mappings...\n")
-  deduplicated_df <- blessy.domainDeduplication(starts_ends_df, unique_domain = unique_domain)
-  
-  # Step 5: Create phasing information with the 'coordinates' parameter
-  cat("Step 5/7: Creating phasing information...\n")
-  phased_df <- blessy.domainPhasing(deduplicated_df, coordinates = coordinates)
-  
-  # Step 6: Create the phasing dictionary
-  cat("Step 6/7: Creating the phasing dictionary...\n")
-  phasing_dict <- blessy.createPhasingDictionary(phased_df, tx_df)
-  
-  # Step 7: Create DoCo-level count
+  cat("Step 1-6/7: Creating DoCo-dictionary...\n")
+  phasing_dict<-blessy.getDictionary(genomeAssembly,transcriptAnnotation,
+  			             domainAnnotation, unique_domain, coordinates)
+
   cat("Step 7/7: Creating DoCo-level count...\n")
   doco_count <- blessy.createDoCoCount(phasing_dict, transcriptCount)
   
-  # Step 8: Return the results
   cat("Pipeline completed. Returning results...\n")
   return(list(
     phasing_dict = phasing_dict,
