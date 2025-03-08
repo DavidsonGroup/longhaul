@@ -17,18 +17,18 @@
 #' @return A data frame (tibble) in BED-like format with the following columns:
 #' \itemize{
 #'   \item \strong{chrom} - Chromosome or scaffold name (from \code{seqnames}).
-#'   \item \strong{chromStart} - Transcript start position (minimum of all exon starts).
-#'   \item \strong{chromEnd} - Transcript end position (maximum of all exon ends).
+#'   \item \strong{txStart} - Transcript start position (minimum of all exon starts).
+#'   \item \strong{txEnd} - Transcript end position (maximum of all exon ends).
 #'   \item \strong{name} - The \code{transcript_id}.
 #'   \item \strong{score} - A numeric score (set to 0 by default).
 #'   \item \strong{strand} - The strand (\code{+} or \code{-}).
-#'   \item \strong{thickStart} - Currently set to the same as \code{chromStart}.
-#'   \item \strong{thickEnd} - Currently set to the same as \code{chromEnd}.
+#'   \item \strong{thickStart} - Currently set to the same as \code{txStart}.
+#'   \item \strong{thickEnd} - Currently set to the same as \code{txEnd}.
 #'   \item \strong{itemRgb} - Color value, default \code{"0,0,0"}.
 #'   \item \strong{blockCount} - Number of exons (blocks).
 #'   \item \strong{blockSizes} - A comma-separated string of exon lengths.
 #'   \item \strong{blockStarts} - A comma-separated string of exon start offsets
-#'         relative to \code{chromStart}.
+#'         relative to \code{txStart}.
 #'   \item \strong{geneName} - Either \code{gene_name} (default) or \code{gene_id}
 #'         (if \code{geneID} = \code{TRUE}).
 #' }
@@ -38,7 +38,7 @@
 #' to BED12 format. Each transcript occupies a single row, and its individual
 #' exons are shown as "blocks".
 #'
-#' @import rtracklayer
+#' @importFrom rtracklayer import
 #' @importFrom dplyr filter group_by arrange summarize first mutate select
 #' @export
 #'
@@ -51,11 +51,10 @@
 blessy.GTFtoBEDdf <- function(gtf_file, feature_type = "exon", geneID = FALSE) {
   
   # 1) Load the GTF via rtracklayer
-  gtf_gr <- rtracklayer::import(gtf_file)
+  gtf_gr <- import(gtf_file)
   gtf_df <- as.data.frame(gtf_gr)
   
   # 2) Optionally filter to only the desired feature type (usually "exon")
-  library(dplyr)
   gtf_df <- gtf_df %>%
     filter(type == feature_type)
   
@@ -67,8 +66,8 @@ blessy.GTFtoBEDdf <- function(gtf_file, feature_type = "exon", geneID = FALSE) {
     arrange(start, .by_group = TRUE) %>%
     summarize(
       chrom       = first(seqnames),
-      chromStart  = min(start),
-      chromEnd    = max(end),
+      txStart     = min(start),
+      txEnd       = max(end),
       name        = first(transcript_id),
       score       = 0,  # No score info in typical GTF; set to 0
       strand      = first(strand),
@@ -91,7 +90,7 @@ blessy.GTFtoBEDdf <- function(gtf_file, feature_type = "exon", geneID = FALSE) {
   # 4) Finalize column order to mimic a BED-like structure
   bed_df <- bed_df %>%
     select(
-      chrom, chromStart, chromEnd, name, score, strand,
+      chrom, txStart, txEnd, name, score, strand,
       thickStart, thickEnd, itemRgb, blockCount, blockSizes, blockStarts, geneName
     )
   

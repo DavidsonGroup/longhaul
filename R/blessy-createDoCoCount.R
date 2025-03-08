@@ -16,8 +16,7 @@
 #'   - \code{DoCo}: Domain-combination string.
 #'   - RNA-seq counts for biological samples.
 #'
-#' @importFrom dplyr mutate
-#' @importFrom stats aggregate
+#' @importFrom data.table as.data.table .SD
 #'
 #' @examples
 #' # Example dictionary data frame
@@ -86,11 +85,11 @@ blessy.createDoCoCount <- function(dict, count_df) {
   
   # Aggregate counts at the DoCo level
   sample_columns <- colnames(count_df)[-ncol(count_df)]
-  aggregated_df <- aggregate(
-    merged_df[, sample_columns],
-    by = list(DoCo = merged_df$DoCo),
-    FUN = sum
-  )
+  
+  dt <- as.data.table(merged_df)
+  aggregated_dt <- dt[, lapply(.SD, sum), by = DoCo, .SDcols = sample_columns]
+  
+  aggregated_df <- data.frame(aggregated_dt)
   
   # Ensure the first column (DoCo) is set as row names
   rownames(aggregated_df) <- aggregated_df$DoCo

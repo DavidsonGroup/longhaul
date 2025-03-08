@@ -32,6 +32,6 @@ bed_df <- data.frame(
 )
 
 # Convert the data frame to a GRangesList
-grl <- blessy.dfToGRanges(bed_df)
+grl <- blessy.dfToGRangesList(bed_df)
 
 }

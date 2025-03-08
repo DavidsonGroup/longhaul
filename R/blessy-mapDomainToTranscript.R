@@ -25,8 +25,9 @@
 #'         Columns from both \code{tx_df} and \code{domain_df} are combined; some are renamed
 #'         for clarity and downstream processing (e.g., domain deduplication).
 #'
-#' @import GenomicRanges
+#' @importFrom GenomicRanges findOverlaps
 #' @importFrom S4Vectors queryHits subjectHits
+#' 
 #' @export
 blessy.mapDomainToTranscript <- function(tx_df, domain_df) {
   

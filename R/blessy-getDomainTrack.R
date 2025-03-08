@@ -8,7 +8,7 @@
 #'
 #' @return A data frame in BED format containing the domain annotation track.
 #'
-#' @import UCSC.utils
+#' @importFrom UCSC.utils fetch_UCSC_track_data
 #' @importFrom dplyr %>%
 #'
 #' @examples
