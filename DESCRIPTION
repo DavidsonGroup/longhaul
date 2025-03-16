@@ -1,5 +1,5 @@
 Package: longhaul
-Version: 0.1.1
+Version: 0.1.2
 Date: 2025-03-05
 Title: A tool for differential analysis on phased protein domains
 Description: blessy creates a new feature class for differential analysis, termed ‘Domain Combination’ or ‘DoCo’ for short, by grouping transcripts with similar protein domains phasing in their coding sequences

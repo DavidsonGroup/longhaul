@@ -46,7 +46,11 @@ blessy.getDictionary <- function(genomeAssembly, transcriptAnnotation, domainAnn
   # Step 1: Fetch transcript and domain annotation tracks
   cat("Step 1/6: Fetching transcript and domain annotation tracks...\n")
   tx_df <- blessy.getTranscriptTrack(genomeAssembly, transcriptAnnotation)
-  domain_df <- blessy.getDomainTrack(genomeAssembly, domainAnnotation)
+  # get each domain track and combine into a single data frame
+  domain_df <- do.call(rbind,
+  	    lapply(domainAnnotation,function(da){
+		blessy.getDomainTrack(genomeAssembly, da)
+		}))
   
   # Step 2: Map domains to transcripts
   cat("Step 2/6: Matching domains to transcripts...\n")
