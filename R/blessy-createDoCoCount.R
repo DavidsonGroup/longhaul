@@ -49,54 +49,54 @@ blessy.createDoCoCount <- function(dict, count_df) {
     stop("The count_df must have rownames representing Transcript IDs.")
   }
   
-  # Check that all columns in count_df are numeric
-  if (!all(sapply(count_df, is.numeric))) {
-    stop("Non-numeric values detected in count columns.")
+  # Check numeric content
+  if (is.data.frame(count_df)) {
+     if (!all(sapply(count_df, is.numeric))) {
+     stop("Non-numeric values detected in count_df.")
   }
-  
-  # Remove version numbers from Transcript and rownames
-  if (any(grepl("\\.[0-9]+$", dict$Transcript))) {
-    warning("Version numbers found in dict$Transcript. Removing them...")
-    dict$Transcript <- sub("\\.[0-9]+$", "", dict$Transcript)
+  } else if (inherits(count_df, "Matrix")) {
+    # OK: sparse matrix from Matrix package
+    } else if (is.matrix(count_df)) {
+    if (!is.numeric(count_df)) {
+       stop("Base matrix is not numeric.")
   }
-  
+  } else {
+    stop("count_df must be a data.frame, matrix, or sparse Matrix.")
+    }
+
+  # Remove transcript version numbers
+  dict$Transcript <- sub("\\.[0-9]+$", "", dict$Transcript)
+  rownames(count_df) <- sub("\\.[0-9]+$", "", rownames(count_df))
   if (any(grepl("\\.[0-9]+$", rownames(count_df)))) {
     warning("Version numbers found in rownames of count_df. Removing them...")
     rownames(count_df) <- sub("\\.[0-9]+$", "", rownames(count_df))
   }
-  
-  # Convert rownames of count_df into a column for merging
-  count_df$TranscriptID <- rownames(count_df)
-  rownames(count_df) <- NULL
-  
-  # Merge dict with count_df to map transcripts to DoCo
-  merged_df <- merge(count_df, dict, by.x = "TranscriptID", by.y = "Transcript", all.x = TRUE)
+
+  # Convert count_df to data.table with transcript IDs
+  transcript_ids <- rownames(count_df)
+
+  # Merge DoCo annotations
+  matched <- match(transcript_ids, dict$Transcript)
+  doco_vec <- dict$DoCo[matched]
   
   # Handle unmatched transcripts
-  unmatched <- is.na(merged_df$DoCo)
-  num_unmatched <- sum(unmatched)
-  
+  num_unmatched <- sum(is.na(doco_vec))
   if (num_unmatched > 0) {
-    # Assign unmatched transcripts to new DoCo ";;;"
-    merged_df$DoCo[unmatched] <- ";;;"
     warning("Uncommon transcripts found, grouping them into the empty ';;;' DoCo group.")
     warning(paste("Number of uncommon transcripts grouped:", num_unmatched))
-  }
-  
-  # Aggregate counts at the DoCo level
-  sample_columns <- colnames(count_df)[-ncol(count_df)]
-  
-  dt <- as.data.table(merged_df)
-  aggregated_dt <- dt[, lapply(.SD, sum), by = DoCo, .SDcols = sample_columns]
-  
-  aggregated_df <- data.frame(aggregated_dt)
-  
-  # Ensure the first column (DoCo) is set as row names
-  rownames(aggregated_df) <- aggregated_df$DoCo
-  
-  # Drop the 'DoCo' column 
-  aggregated_df <- aggregated_df[, -1]
-  
-  # Return the modified data frame
-  return(aggregated_df)
+    doco_vec[is.na(doco_vec)] <- ";;;"
+    }
+
+    # Convert doco_vec to factor for grouping
+    doco_factor <- factor(doco_vec)
+
+
+    if (inherits(count_df, "Matrix")) {
+       group_mat <- Matrix::sparse.model.matrix(~ doco + 0, data = data.frame(doco = doco_factor))
+       aggregated_mat <- t(group_mat) %*% count_df
+       rownames(aggregated_mat) <- levels(doco_factor)
+       return(aggregated_mat)
+    } #otherwise it's a regular data.frame      
+    aggregated_df <- rowsum(count_df, group = doco_factor)
+    return(aggregated_df)  # return as data.frame
 }
