@@ -22,7 +22,7 @@
 blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, unique_domain = FALSE, coordinates = TRUE) {
   # Validation for tx_df
   cat("Step 1/8: Validating transcript data frame format...\n")
-  tx_required_cols <- c("chrom", "txStart", "txEnd", "strand", "blockCount", "blockSizes", "blockStarts", "geneName")
+  tx_required_cols <- c("chrom", "thickStart", "thickEnd", "strand", "blockCount", "blockSizes", "blockStarts", "geneName")
   if (!all(tx_required_cols %in% colnames(tx_df))) {
     stop("The transcript data frame (tx_df) must contain the following columns: ", paste(tx_required_cols, collapse = ", "))
   }
@@ -48,7 +48,7 @@ blessy.usingCustomAnnotation <- function(tx_df, domain_df, tx_count, unique_doma
   deduplicated_df <- blessy.domainDeduplication(starts_ends_df, unique_domain = unique_domain)
   
   # Step 6: Create phasing information with the 'coordinates' parameter
-  cat("Step 6/8: Creating phasing information...\n", coordinates)
+  cat("Step 6/8: Creating phasing information...\n")
   phased_df <- blessy.domainPhasing(deduplicated_df, coordinates = coordinates)
   
   # Step 7: Create the phasing dictionary
