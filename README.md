@@ -58,7 +58,7 @@ BiocManager::install(c("GenomicRanges", "UCSC.utils", "rtracklayer"))
 BiocManager::version()
 
 # Install the latest version of Bioconductor if needed
-BiocManager::install(version = "3.20")
+BiocManager::install(version = "3.21")
 
 ```
 
@@ -76,11 +76,11 @@ devtools::install_github("DavidsonGroup/longhaul")
 
 ## Overview
 
-**longhaul** is a comprehensive toolkit intended to streamline various computational biology workflows within the Davidson Lab. It encompasses multiple modules, each tailored to specific tasks in long-read RNA-Seq analysis.
+**longhaul** is a toolkit intended to streamline various computational biology workflows for long read transcriptome analysis. It encompasses multiple modules, each tailored to specific tasks in long-read RNA-Seq analysis.
 
 The **longhaul** package includes the following modules:
 
-- blessy: a tool for differential analysis on phased protein domains.
+- **blessy**: a tool for differential analysis on phased protein domains.
 
 
 ## Modules
