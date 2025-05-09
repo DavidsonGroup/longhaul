@@ -1,6 +1,6 @@
 # longhaul
 
-**longhaul** is an R package of miscellaneous long-read data analysis tools. 
+**longhaul** is an R package of miscellaneous long-read data analysis tools. It currently contains **Blessy**, with other tools to be added soon.
 
 ## Table of Contents
 
