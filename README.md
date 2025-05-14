@@ -9,9 +9,6 @@
 - [Overview](#overview)
 - [Modules](#modules)
   - [blessy](#blessy)
-    - [Blessy Overview](#blessy-overview) 
-    - [Running Blessy](#running-blessy)
-    - [Functions and Use Cases](#functions-and-use-cases)
 - [License](#license)
 - [Contact](#contact)
 
