@@ -1,4 +1,4 @@
-""TranscriptID" "ctrl1_sorted" "ctrl2_sorted" "ctrl3_sorted" "de1_sorted" "de2_sorted" "de3_sorted"
+"ctrl1_sorted" "ctrl2_sorted" "ctrl3_sorted" "de1_sorted" "de2_sorted" "de3_sorted"
 "ENST00000000233.10" 184 171.71795 176.38686 57.10638 87.81333 61.01887
 "ENST00000000412.8" 102.18663 86.26154 126.7752 116 58.30727 115.30755
 "ENST00000000442.11" 4.57339 0 0 0 0 0
