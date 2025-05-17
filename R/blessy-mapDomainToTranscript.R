@@ -30,21 +30,27 @@
 #' 
 #' @export
 blessy.mapDomainToTranscript <- function(tx_df, domain_df) {
-  
+
+  # 0) Remove duplicate entries in the domain table
+  # by coordinates, domain name is ignored
+  dedup_columns <- c("chrom", "chromStart", "chromEnd", "strand",
+                   "thickStart", "thickEnd", "blockSizes", "blockStarts")
+  domain_df_unique <- domain_df[!duplicated(domain_df[ , dedup_columns]), ]
+
   # 1) Convert data frames to GRangesList objects using your existing helper
   tx_grangesList <- blessy.dfToGRangesList(tx_df)
-  domain_grangesList <- blessy.dfToGRangesList(domain_df)
+  domain_grangesList <- blessy.dfToGRangesList(domain_df_unique)
   
   # 2) Find overlaps between the GRangesList objects
   overlaps <- findOverlaps(tx_grangesList, domain_grangesList)
   
   # 3) Extract indices of overlapping elements
   query_hits <- queryHits(overlaps)     # Indices in tx_grangesList (matching rows in tx_df)
-  subject_hits <- subjectHits(overlaps) # Indices in domain_grangesList (matching rows in domain_df)
+  subject_hits <- subjectHits(overlaps) # Indices in domain_grangesList (matching rows in domain_df_unique)
   
-  # 4) Match rows from tx_df and domain_df
+  # 4) Match rows from tx_df and domain_df_unique
   matched_tx <- tx_df[query_hits, , drop = FALSE]
-  matched_domain <- domain_df[subject_hits, , drop = FALSE]
+  matched_domain <- domain_df_unique[subject_hits, , drop = FALSE]
   
   # 5) Optionally rename columns for clarity
   tx_rename <- c(
